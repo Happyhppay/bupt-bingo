@@ -1,6 +1,9 @@
 fastapi
+pyjwt
 uvicorn
 sqlalchemy
+pydantic
 python-jose[cryptography]
+passlib[bcrypt]
 python-multipart
-python-jwt
+python-dotenv

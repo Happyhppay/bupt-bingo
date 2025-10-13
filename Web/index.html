@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo H5 小游戏</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body>
+    <!-- 登录页面 -->
+    <div id="loginPage" class="page active">
+        <div class="container">
+            <div class="login-card">
+                <h1>🎯 Bingo 小游戏</h1>
+                <p class="subtitle">社团游园会专属游戏</p>
+                
+                <form id="loginForm" class="login-form">
+                    <div class="input-group">
+                        <label for="studentId">学号</label>
+                        <input type="number" id="studentId" placeholder="请输入学号" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="name">姓名</label>
+                        <input type="text" id="name" placeholder="请输入姓名" required>
+                    </div>
+                    
+                    <button type="submit" class="login-btn">开始游戏</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏主页面 -->
+    <div id="gamePage" class="page">
+        <div class="game-header">
+            <div class="user-info">
+                <span id="userName"></span>
+                <span class="role-badge" id="userRole"></span>
+            </div>
+            <div class="points-display">
+                <div class="point-item">
+                    <span class="point-label">普通积分</span>
+                    <span class="point-value" id="normalPoints">0</span>
+                </div>
+                <div class="point-item">
+                    <span class="point-label">特殊积分</span>
+                    <span class="point-value" id="specialPoints">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-content">
+            <!-- Bingo 格子 -->
+            <div class="bingo-container">
+                <h2>Bingo 游戏</h2>
+                <div class="bingo-grid" id="bingoGrid">
+                    <!-- 5x5 格子将通过 JavaScript 生成 -->
+                </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="action-buttons">
+                <button id="scanBtn" class="action-btn scan-btn">
+                    📷 扫描二维码
+                </button>
+                <button id="useNormalBtn" class="action-btn normal-btn" disabled>
+                    🎲 使用普通积分
+                </button>
+                <button id="useSpecialBtn" class="action-btn special-btn" disabled>
+                    ⭐ 使用特殊积分
+                </button>
+            </div>
+
+            <!-- 奖励显示 -->
+            <div class="rewards-section" id="rewardsSection" style="display: none;">
+                <h3>🎉 可获取奖励</h3>
+                <div class="rewards-list" id="rewardsList"></div>
+                <button id="generateRewardBtn" class="reward-btn" style="display: none;">
+                    生成领奖码
+                </button>
+            </div>
+        </div>
+
+        <!-- 底部导航 -->
+        <div class="bottom-nav">
+            <button id="adminBtn" class="nav-btn" style="display: none;">
+                🔧 后台管理
+            </button>
+        </div>
+    </div>
+
+    <!-- 二维码扫描页面 -->
+    <div id="scanPage" class="page">
+        <div class="scan-header">
+            <button id="backToGameBtn" class="back-btn">← 返回游戏</button>
+            <h2>扫描二维码</h2>
+        </div>
+        
+        <div class="scan-container">
+            <div id="qr-reader" class="qr-reader"></div>
+            <div class="scan-tips">
+                <p>将二维码对准摄像头进行扫描</p>
+                <p>扫描社团二维码可获得积分</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 后台管理页面 -->
+    <div id="adminPage" class="page">
+        <div class="admin-header">
+            <button id="backToGameFromAdminBtn" class="back-btn">← 返回游戏</button>
+            <h2>后台管理</h2>
+        </div>
+        
+        <div class="admin-content">
+            <!-- 社团成员功能 -->
+            <div id="clubMemberSection" class="admin-section" style="display: none;">
+                <h3>社团二维码管理</h3>
+                <button id="generateClubQrBtn" class="admin-btn">
+                    生成社团二维码
+                </button>
+                <div id="clubQrDisplay" class="qr-display" style="display: none;">
+                    <h4>社团二维码</h4>
+                    <div id="clubQrCode"></div>
+                    <p class="qr-tips">此二维码5分钟内有效，扫描后立即失效</p>
+                </div>
+            </div>
+
+            <!-- 管理员功能 -->
+            <div id="adminSection" class="admin-section" style="display: none;">
+                <h3>领奖验证</h3>
+                <div class="verify-section">
+                    <input type="text" id="rewardTokenInput" placeholder="请输入领奖码" class="verify-input">
+                    <button id="verifyRewardBtn" class="admin-btn">验证领奖码</button>
+                </div>
+                <div id="verifyResult" class="verify-result" style="display: none;">
+                    <h4>验证结果</h4>
+                    <div id="verifyInfo"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 特殊积分选择页面 -->
+    <div id="specialSelectPage" class="page">
+        <div class="select-header">
+            <button id="backToGameFromSelectBtn" class="back-btn">← 返回游戏</button>
+            <h2>选择格子位置</h2>
+        </div>
+        
+        <div class="select-content">
+            <p>请选择要点亮的格子位置：</p>
+            <div class="select-grid" id="selectGrid">
+                <!-- 选择格子将通过 JavaScript 生成 -->
+            </div>
+            <button id="confirmSelectBtn" class="confirm-btn" disabled>确认选择</button>
+        </div>
+    </div>
+
+    <!-- 加载提示 -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner"></div>
+        <p>加载中...</p>
+    </div>
+
+    <!-- 消息提示 -->
+    <div id="messageToast" class="message-toast" style="display: none;">
+        <span id="messageText"></span>
+    </div>
+
+    <script src="api.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
