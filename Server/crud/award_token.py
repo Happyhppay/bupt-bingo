@@ -13,7 +13,7 @@ def create_award_token(db: Session, award_token: AwardTokenCreate):
     db_token = AwardToken(
         token=award_token.token,
         user_id=award_token.user_id,
-        bingo_type=award_token.bingo_type,
+        bingo=award_token.reward_level,
         is_verified=0
     )
     db.add(db_token)

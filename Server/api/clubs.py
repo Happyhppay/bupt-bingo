@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+
+from crud.user_scan import get_by_user_id_and_club_id
 from database import get_db
 from schemas.club import QrcodeRefreshResponse, ScanQrcodeRequest, ScanQrcodeResponse
 from crud.qrcode_token import create_qrcode_token, get_valid_unused_token, update_qrcode_token_status
@@ -60,6 +62,10 @@ def scan_club_qrcode(
     club = get_club(db, club_id=qrcode_token.club_id)
     if not club:
         raise HTTPException(status_code=404, detail="Club not found")
+
+    user_scan = get_by_user_id_and_club_id(db, current_user.id, qrcode_token.club_id)
+    if user_scan:
+        raise HTTPException(status_code=400, detail="User already scanned")
 
     # 确定增加的积分类型
     added_point = 0

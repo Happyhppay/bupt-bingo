@@ -24,6 +24,7 @@ class User(UserBase):
     id: int
     points: int
     special_points: int
+    bingo: int
     role: int
     club_id: Optional[int]
     first_entry_time: datetime

@@ -4,8 +4,8 @@ from typing import Optional
 
 class AwardTokenBase(BaseModel):
     user_id: int
-    bingo_type: str
-    award_level: Optional[int] = None
+    bingo: int
+    reward_level: Optional[int] = None
 
 
 class AwardTokenCreate(AwardTokenBase):
@@ -24,7 +24,7 @@ class AwardToken(AwardTokenBase):
 
 
 class GenerateRewardQrcodeRequest(BaseModel):
-    bingoType: str
+    rewardLevel: int
 
 
 class GenerateRewardQrcodeResponse(BaseModel):

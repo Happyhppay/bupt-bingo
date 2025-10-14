@@ -6,7 +6,7 @@ from schemas.reward import GenerateRewardQrcodeRequest, GenerateRewardQrcodeResp
 from crud.award_token import create_award_token, get_award_token, verify_award_token
 from crud.user import get_user
 from crud.bingo_grid import get_user_bingo_status
-from utils import generate_award_token, check_bingo_conditions
+from utils import generate_award_token, get_bingo_nums
 from dependencies import get_current_user, get_current_admin
 
 router = APIRouter(
@@ -22,23 +22,26 @@ def generate_reward_qrcode(
         current_user=Depends(get_current_user)
 ):
     """生成领奖二维码"""
-    bingo_type = reward_request.bingoType
+    reward_level = reward_request.rewardLevel
+    if reward_level < 1 or reward_level > 7:
+        raise HTTPException(status_code=400, detail="Invalid reward level")
 
     # 检查用户是否满足该Bingo条件
     grid_status = get_user_bingo_status(db, user_id=current_user.id)
-    valid_bingos = check_bingo_conditions(grid_status)
+    valid_bingos = get_bingo_nums(grid_status)
 
-    if bingo_type not in valid_bingos:
-        raise HTTPException(status_code=400, detail=f"User does not meet {bingo_type} bingo condition")
+    if reward_level > valid_bingos and reward_level != 7 or valid_bingos != 25 and reward_level == 7:
+        raise HTTPException(status_code=400, detail=f"User does not meet {reward_level} bingo condition")
+
 
     # 生成领奖token
-    token = generate_award_token(user_id=current_user.id, bingo_type=bingo_type)
+    token = generate_award_token(user_id=current_user.id, reward_level=reward_level)
 
     # 创建领奖记录
     create_award_token(db, award_token={
         "token": token,
         "user_id": current_user.id,
-        "bingo_type": bingo_type
+        "bingo": reward_level
     })
 
     return {
@@ -84,6 +87,6 @@ def verify_reward_qrcode(
                 "studentId": user.id,
                 "name": user.name
             },
-            "bingoType": award.bingo_type
+            "rewardType": award.bingo
         }
     }

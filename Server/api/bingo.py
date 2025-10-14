@@ -6,7 +6,7 @@ from schemas.bingo import BingoStatusResponse, LightBingoRequest, LightBingoResp
 from crud.bingo_grid import get_user_bingo_status, set_bingo_grid_lit
 from crud.user import get_user, update_user
 from dependencies import get_current_user
-from utils import check_bingo_conditions
+from utils import get_bingo_nums
 
 router = APIRouter(
     prefix="/bingo",
@@ -24,7 +24,7 @@ def get_bingo_status(
     grid_status = get_user_bingo_status(db, user_id=current_user.id)
 
     # 检查Bingo条件
-    bingo_types = check_bingo_conditions(grid_status)
+    bingo = get_bingo_nums(grid_status)
 
     return {
         "code": 200,
@@ -33,7 +33,7 @@ def get_bingo_status(
             "point": current_user.points,
             "specialPoint": current_user.special_points,
             "bingoGrid": grid_status,
-            "bingoType": bingo_types
+            "bingo": bingo
         }
     }
 
@@ -70,7 +70,7 @@ def light_bingo_grid(
         for i in range(5):
             for j in range(5):
                 if grid_status[i][j] == 0:
-                    unlit_cells.append((i + 1, j + 1))  # 转换为1-based
+                    unlit_cells.append((i, j))
 
         if not unlit_cells:
             raise HTTPException(status_code=400, detail="All cells are already lit")
@@ -78,12 +78,12 @@ def light_bingo_grid(
         # 随机选择一个未点亮的格子
         row, col = random.choice(unlit_cells)
     else:  # special
-        # 特殊积分：使用指定位置（转换为1-based）
-        row = location[0] + 1
-        col = location[1] + 1
+        # 特殊积分：使用指定位置
+        row = location[0]
+        col = location[1]
 
         # 验证位置有效性
-        if row < 1 or row > 5 or col < 1 or col > 5:
+        if row < 0 or row > 4 or col < 0 or col > 4:
             raise HTTPException(status_code=400, detail="Invalid location")
 
     # 点亮格子
@@ -98,7 +98,7 @@ def light_bingo_grid(
     # 获取更新后的状态
     updated_user = get_user(db, user_id=current_user.id)
     updated_grid_status = get_user_bingo_status(db, user_id=current_user.id)
-    bingo_types = check_bingo_conditions(updated_grid_status)
+    bingo = get_bingo_nums(updated_grid_status)
 
     return {
         "code": 200,
@@ -107,6 +107,6 @@ def light_bingo_grid(
             "point": updated_user.points,
             "specialPoint": updated_user.special_points,
             "bingoGrid": updated_grid_status,
-            "bingoType": bingo_types
+            "bingo": bingo
         }
     }

@@ -34,7 +34,7 @@ def student_login(login_data: UserLoginRequest, db: Session = Depends(get_db)):
             raise HTTPException(status_code=400, detail=f"用户注册失败: {str(e)}")
 
     # 生成JWT令牌
-    access_token_expires = timedelta(days=30)
+    access_token_expires = timedelta(days=10)
     access_token = create_access_token(
         data={"sub": user.id}, expires_delta=access_token_expires
     )
@@ -81,7 +81,7 @@ def verify_invite_code(invite_code: str, db: Session = Depends(get_db), current_
     update_invite_code_status(db, code_id=int(code.id))
 
     # 生成新的令牌
-    access_token_expires = timedelta(days=30)
+    access_token_expires = timedelta(days=10)
     new_token = create_access_token(
         data={"sub": updated_user.id}, expires_delta=access_token_expires
     )

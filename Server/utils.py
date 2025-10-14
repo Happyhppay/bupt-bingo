@@ -55,40 +55,36 @@ def generate_club_qrcode_token(club_id: int):
     return generate_token(f"club_{club_id}_{random_str}")
 
 
-def generate_award_token(user_id: int, bingo_type: str):
+def generate_award_token(user_id: int, reward_level: str):
     """生成领奖token"""
     timestamp = datetime.now().timestamp()
-    return generate_token(f"user_{user_id}_{bingo_type}_{timestamp}")
+    return generate_token(f"user_{user_id}_{reward_level}_{timestamp}")
 
 
-def check_bingo_conditions(grid_status) -> list:
+def get_bingo_nums(grid_status) -> int:
     """
     检查Bingo条件
     grid_status: 5x5矩阵，1表示点亮，0表示未点亮
     返回满足条件的Bingo类型列表
     """
-    bingo_types = []
+    bingo_nums: int = 0
 
     # 检查横向
     for i in range(5):
         if all(grid_status[i][j] == 1 for j in range(5)):
-            bingo_types.append(f"横向{i + 1}")
+            bingo_nums += 1
 
     # 检查竖向
     for j in range(5):
         if all(grid_status[i][j] == 1 for i in range(5)):
-            bingo_types.append(f"竖向{j + 1}")
+            bingo_nums += 1
 
     # 检查斜向1（左上到右下）
     if all(grid_status[i][i] == 1 for i in range(5)):
-        bingo_types.append("斜向1")
+        bingo_nums += 1
 
     # 检查斜向2（右上到左下）
     if all(grid_status[i][4 - i] == 1 for i in range(5)):
-        bingo_types.append("斜向2")
+        bingo_nums += 1
 
-    # 检查全图
-    if all(grid_status[i][j] == 1 for i in range(5) for j in range(5)):
-        bingo_types.append("全图")
-
-    return bingo_types
+    return bingo_nums
