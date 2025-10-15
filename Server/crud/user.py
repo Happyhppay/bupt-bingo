@@ -16,8 +16,8 @@ def create_user(db: Session, student_id: int, name: str):
     db_user = User(
         id=student_id,
         name=name,
-        points=0,
-        special_points=0,
+        points=100,
+        special_points=100,
         role=0,
         club_id=None
     )
