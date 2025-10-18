@@ -52,3 +52,28 @@ const onSubmit = async () => {
   }
 }
 </script>
+<style>
+/* LoginModal/index.vue 中的 style 部分 */
+.van-form {
+  padding: 8px 0;
+}
+
+.van-field {
+  background: #f8f9fa;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.van-field:focus-within {
+  border-color: #667eea;
+  background: white;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+}
+
+.van-field__label {
+  font-weight: 500;
+  color: #2c3e50;
+}
+</style>

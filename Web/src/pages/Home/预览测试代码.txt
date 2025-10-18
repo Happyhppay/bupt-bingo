@@ -1,0 +1,483 @@
+如果想要对每个页面进行预览测试，请把下面的代码复制替换Home/index.vue的代码，记得对源代码进行备份。
+<template>
+  <div class="home">
+    <!-- 顶部栏 -->
+    <van-nav-bar class="header">
+      <template #left>
+        <user-info v-if="userStore.token" />
+        <van-button v-else type="primary" size="small" @click="showLogin">登录</van-button>
+      </template>
+      <template #right>
+        <van-button type="primary" size="small" icon="scan" @click="showScan">扫码</van-button>
+      </template>
+    </van-nav-bar>
+
+    <!-- Bingo 游戏区域 -->
+    <div class="game-area">
+      <div class="side-buttons left">
+        <van-button
+          type="primary"
+          :disabled="!userStore.bingoStatus.point"
+          @click="useNormalPoint"
+        >
+          使用普通积分 ({{ userStore.bingoStatus.point }})
+        </van-button>
+      </div>
+
+      <bingo-grid class="bingo-grid" />
+
+      <div class="side-buttons right">
+        <van-button
+          type="primary"
+          :disabled="!userStore.bingoStatus.specialPoint"
+          @click="useSpecialPoint"
+        >
+          使用特殊积分 ({{ userStore.bingoStatus.specialPoint }})
+        </van-button>
+      </div>
+    </div>
+
+    <!-- 底部奖励按钮区域 -->
+    <div class="rewards">
+      <div class="reward-grid">
+        <van-button
+          v-for="level in 6"
+          :key="level"
+          :disabled="userStore.bingoStatus.bingo < level"
+          @click="getReward(level)"
+        >
+          {{ level }}级奖励
+        </van-button>
+      </div>
+      <div class="admin-entry" @click="goToAdmin">后台入口</div>
+    </div>
+
+    <!-- 页面预览按钮 -->
+    <div class="preview-button">
+      <van-button
+        type="warning"
+        size="mini"
+        @click="showPreview = true"
+        class="preview-btn"
+        icon="eye-o"
+      >
+        页面预览
+      </van-button>
+
+      <van-action-sheet v-model:show="showPreview" title="选择预览组件">
+        <div class="preview-actions">
+          <van-button
+            block
+            @click="previewComponent('bingo-grid')"
+            icon="photo-o"
+          >
+            Bingo网格
+          </van-button>
+          <van-button
+            block
+            @click="previewComponent('user-info')"
+            icon="info-o"
+          >
+            用户信息
+          </van-button>
+          <van-button
+            block
+            @click="previewComponent('login-modal')"
+            icon="user-o"
+          >
+            登录弹窗
+          </van-button>
+          <van-button
+            block
+            @click="previewComponent('scan-modal')"
+            icon="scan"
+          >
+            扫码弹窗
+          </van-button>
+          <van-button
+            block
+            @click="previewComponent('reward-modal')"
+            icon="gift-o"
+          >
+            奖励弹窗
+          </van-button>
+          <van-button
+            block
+            @click="previewComponent('special-point-modal')"
+            icon="star-o"
+          >
+            特殊积分
+          </van-button>
+          <van-button
+            block
+            @click="previewComponent('admin')"
+            icon="manager-o"
+          >
+            管理员后台
+          </van-button>
+          <van-button
+            block
+            @click="previewComponent('club-admin')"
+            icon="friends-o"
+          >
+            社团后台
+          </van-button>
+        </div>
+      </van-action-sheet>
+
+      <!-- 预览容器 -->
+      <div v-if="currentPreview" class="preview-overlay">
+        <div class="preview-container">
+          <div class="preview-header">
+            <h3>预览模式 - {{ getPreviewTitle(currentPreview) }}</h3>
+            <van-button
+              type="default"
+              size="small"
+              @click="currentPreview = null"
+              icon="cross"
+            >
+              关闭预览
+            </van-button>
+          </div>
+          <div class="preview-content">
+            <!-- 直接使用组件，避免动态组件的问题 -->
+            <BingoGrid v-if="currentPreview === 'bingo-grid'" />
+            <UserInfo v-else-if="currentPreview === 'user-info'" />
+            <LoginModal v-else-if="currentPreview === 'login-modal'" v-model:show="loginModalShow" />
+            <ScanModal v-else-if="currentPreview === 'scan-modal'" v-model:show="scanModalShow" />
+            <RewardModal v-else-if="currentPreview === 'reward-modal'" v-model:show="rewardModalShow" reward-token="preview_token_123" />
+            <SpecialPointModal v-else-if="currentPreview === 'special-point-modal'" v-model:show="specialModalShow" @confirm="onSpecialConfirm" />
+            <Admin v-else-if="currentPreview === 'admin'" />
+            <ClubAdmin v-else-if="currentPreview === 'club-admin'" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 原有的弹窗（不影响预览功能） -->
+    <login-modal v-model:show="showLoginModal" />
+    <scan-modal v-model:show="showScanModal" />
+    <special-point-modal v-model:show="showSpecialPointModal" @confirm="confirmSpecialPoint" />
+    <reward-modal v-model:show="showRewardModal" :reward-token="currentRewardToken" />
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useUserStore } from '@/store/user'
+import { api } from '@/api'
+import { showToast } from 'vant'
+
+// 导入主组件
+import UserInfo from '@/components/UserInfo/index.vue'
+import BingoGrid from '@/components/BingoGrid/index.vue'
+import LoginModal from '@/components/LoginModal/index.vue'
+import ScanModal from '@/components/ScanModal/index.vue'
+import SpecialPointModal from '@/components/SpecialPointModal/index.vue'
+import RewardModal from '@/components/RewardModal/index.vue'
+// 导入预览组件
+import Admin from '@/pages/Admin/index.vue'
+import ClubAdmin from '@/pages/ClubAdmin/index.vue'
+
+const router = useRouter()
+const userStore = useUserStore()
+
+// 各种弹窗的显示状态
+const showLoginModal = ref(false)
+const showScanModal = ref(false)
+const showSpecialPointModal = ref(false)
+const showRewardModal = ref(false)
+const currentRewardToken = ref('')
+
+// 预览相关状态
+const showPreview = ref(false)
+const currentPreview = ref(null)
+
+// 预览弹窗的显示状态
+const loginModalShow = ref(true)
+const scanModalShow = ref(true)
+const rewardModalShow = ref(true)
+const specialModalShow = ref(true)
+
+// 获取预览标题
+const getPreviewTitle = (component) => {
+  const titles = {
+    'admin': '管理员后台',
+    'club-admin': '社团后台',
+    'bingo-grid': 'Bingo网格',
+    'login-modal': '登录弹窗',
+    'scan-modal': '扫码弹窗',
+    'reward-modal': '奖励弹窗',
+    'special-point-modal': '特殊积分选择',
+    'user-info': '用户信息'
+  }
+  return titles[component] || '组件预览'
+}
+
+// 预览组件
+const previewComponent = (component) => {
+  console.log('预览组件:', component)
+  currentPreview.value = component
+  showPreview.value = false
+
+  // 重置弹窗显示状态
+  loginModalShow.value = true
+  scanModalShow.value = true
+  rewardModalShow.value = true
+  specialModalShow.value = true
+}
+
+// 特殊积分选择回调（预览用）
+const onSpecialConfirm = (location) => {
+  showToast(`预览模式选择了位置: [${location[0]}, ${location[1]}]`)
+  specialModalShow.value = false
+}
+
+// 原有功能方法
+const showLogin = () => {
+  showLoginModal.value = true
+}
+
+const showScan = () => {
+  if (!userStore.token) {
+    showToast('请先登录')
+    return
+  }
+  showScanModal.value = true
+}
+
+const useNormalPoint = async () => {
+  try {
+    await userStore.lightGrid({ pointType: 'normal' })
+    showToast('使用成功')
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+const useSpecialPoint = () => {
+  showSpecialPointModal.value = true
+}
+
+const confirmSpecialPoint = async (location) => {
+  try {
+    await userStore.lightGrid({
+      pointType: 'special',
+      location
+    })
+    showToast('使用成功')
+    showSpecialPointModal.value = false
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+const getReward = async (level) => {
+  try {
+    const res = await api.getRewardQrcode({ rewardLevel: level })
+    currentRewardToken.value = res.rewardToken
+    showRewardModal.value = true
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+const goToAdmin = () => {
+  const role = userStore.userInfo.role
+  if (role === 'admin') {
+    router.push('/admin')
+  } else if (role === 'club') {
+    router.push('/club-admin')
+  } else {
+    showToast('权限不足')
+  }
+}
+</script>
+
+<style scoped>
+.home {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.game-area {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+}
+
+.side-buttons {
+  width: 80px;
+}
+
+.bingo-grid {
+  flex: 1;
+  margin: 0 16px;
+}
+
+.rewards {
+  padding: 16px;
+}
+
+.reward-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.admin-entry {
+  text-align: center;
+  color: #999;
+  font-size: 12px;
+  padding: 8px;
+}
+
+/* 页面预览按钮样式 */
+.preview-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+}
+
+.preview-btn {
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  color: white;
+  border: none;
+  font-weight: 500;
+}
+
+.preview-actions {
+  padding: 16px;
+}
+
+.preview-actions .van-button {
+  margin-bottom: 12px;
+  border-radius: 12px;
+  height: 44px;
+}
+
+.preview-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.preview-container {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.preview-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.preview-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  max-height: calc(90vh - 80px);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* 为不同预览组件设置特定样式 */
+:deep(.preview-content .admin),
+:deep(.preview-content .club-admin) {
+  height: auto;
+  min-height: 500px;
+  width: 100%;
+}
+
+:deep(.preview-content .bingo-grid) {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+:deep(.preview-content .user-info) {
+  background: rgba(102, 126, 234, 0.1);
+  padding: 20px;
+  border-radius: 12px;
+  width: 100%;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .game-area {
+    flex-direction: column;
+    padding: 12px;
+  }
+
+  .side-buttons {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 8px 0;
+  }
+
+  .preview-overlay {
+    padding: 10px;
+  }
+
+  .preview-container {
+    max-height: 95vh;
+  }
+
+  .preview-content {
+    max-height: calc(95vh - 80px);
+    padding: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .preview-button {
+    bottom: 10px;
+    right: 10px;
+  }
+
+  .preview-btn {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+}
+</style>
