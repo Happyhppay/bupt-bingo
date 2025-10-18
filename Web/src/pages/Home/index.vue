@@ -66,7 +66,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import { api } from '@/api'
@@ -80,6 +80,12 @@ import RewardModal from '@/components/RewardModal/index.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
+
+onMounted(() => {
+  if (userStore.token) {
+    userStore.getBingoStatus()
+  }
+})
 
 // 各种弹窗的显示状态
 const showLoginModal = ref(false)

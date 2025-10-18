@@ -16,7 +16,7 @@
           v-for="(cell, j) in row" 
           :key="j"
           :class="['grid-cell', { active: cell === 1 }]"
-          @click="onCellSelect([i, j])"
+          @click="onCellSelect([i + 1, j + 1])"
         ></div>
       </div>
     </div>
@@ -35,7 +35,7 @@ const emit = defineEmits(['update:show', 'confirm'])
 const userStore = useUserStore()
 
 const onCellSelect = (location) => {
-  if (userStore.bingoStatus.bingoGrid[location[0]][location[1]] === 1) {
+  if (userStore.bingoStatus.bingoGrid[location[0] - 1][location[1] - 1] === 1) {
     showToast('该格子已被点亮')
     return
   }

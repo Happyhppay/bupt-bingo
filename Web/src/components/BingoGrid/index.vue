@@ -9,7 +9,7 @@
         v-for="(cell, j) in row" 
         :key="j"
         :class="['grid-cell', { active: cell === 1 }]"
-        @click="onCellClick([i, j])"
+        @click="onCellClick([i + 1, j + 1])"
       ></div>
     </div>
   </div>
