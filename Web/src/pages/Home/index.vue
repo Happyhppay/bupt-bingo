@@ -14,8 +14,8 @@
     <!-- Bingo 游戏区域 -->
     <div class="game-area">
       <div class="side-buttons left">
-        <van-button 
-          type="primary" 
+        <van-button
+          type="primary"
           :disabled="!userStore.bingoStatus.point"
           @click="useNormalPoint"
         >
@@ -26,8 +26,8 @@
       <bingo-grid class="bingo-grid" />
 
       <div class="side-buttons right">
-        <van-button 
-          type="primary" 
+        <van-button
+          type="primary"
           :disabled="!userStore.bingoStatus.specialPoint"
           @click="useSpecialPoint"
         >
@@ -39,8 +39,8 @@
     <!-- 底部奖励按钮区域 -->
     <div class="rewards">
       <div class="reward-grid">
-        <van-button 
-          v-for="level in 6" 
+        <van-button
+          v-for="level in 6"
           :key="level"
           :disabled="userStore.bingoStatus.bingo < level"
           @click="getReward(level)"
@@ -66,7 +66,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import { api } from '@/api'
@@ -80,12 +80,6 @@ import RewardModal from '@/components/RewardModal/index.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
-
-onMounted(() => {
-  if (userStore.token) {
-    userStore.getBingoStatus()
-  }
-})
 
 // 各种弹窗的显示状态
 const showLoginModal = ref(false)
@@ -126,9 +120,9 @@ const useSpecialPoint = () => {
 // 确认使用特殊积分
 const confirmSpecialPoint = async (location) => {
   try {
-    await userStore.lightGrid({ 
+    await userStore.lightGrid({
       pointType: 'special',
-      location 
+      location
     })
     showToast('使用成功')
     showSpecialPointModal.value = false
@@ -162,16 +156,20 @@ const goToAdmin = () => {
 </script>
 
 <style scoped>
+/* Home/index.vue 中的 style 部分 */
 .home {
   height: 100vh;
   display: flex;
   flex-direction: column;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
 .header {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  background: rgba(102, 126, 234, 0.95) !important;
 }
 
 .game-area {
@@ -179,33 +177,105 @@ const goToAdmin = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
+  padding: 20px;
+  gap: 16px;
 }
 
 .side-buttons {
-  width: 80px;
+  width: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.side-buttons .van-button {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  height: 120px;
+  padding: 16px 8px;
+  font-size: 14px;
 }
 
 .bingo-grid {
   flex: 1;
-  margin: 0 16px;
+  max-width: 500px;
 }
 
 .rewards {
-  padding: 16px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .reward-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: 12px;
   margin-bottom: 16px;
+}
+
+.reward-grid .van-button {
+  height: 44px;
+  font-size: 14px;
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+  color: #2c3e50;
+  border: none;
+}
+
+.reward-grid .van-button:not(.van-button--disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .admin-entry {
   text-align: center;
   color: #999;
   font-size: 12px;
-  padding: 8px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.admin-entry:hover {
+  background: rgba(255, 255, 255, 0.8);
+  color: #667eea;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .game-area {
+    flex-direction: column;
+    padding: 16px;
+  }
+
+  .side-buttons {
+    width: 100%;
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .side-buttons .van-button {
+    writing-mode: horizontal-tb;
+    height: auto;
+    padding: 12px 16px;
+  }
+
+  .reward-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .reward-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .game-area {
+    padding: 12px;
+  }
 }
 </style>
