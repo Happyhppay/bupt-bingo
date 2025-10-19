@@ -10,6 +10,7 @@ def get_bingo_grid(db: Session, grid_id: int):
 
 
 def get_bingo_grid_by_user_and_position(db: Session, user_id: int, row: int, col: int):
+    """按用户和位置查找格子。row/col 应为 1-based（1..5）。"""
     return db.query(BingoGrid).filter(
         BingoGrid.user_id == user_id,
         BingoGrid.grid_row == row,
@@ -23,6 +24,10 @@ def get_bingo_grids_by_user(db: Session, user_id: int):
 
 def create_bingo_grid(db: Session, grid: BingoGridCreate):
     # 检查是否已存在
+    # grid.grid_row/grid.grid_col 应为 1-based
+    if grid.grid_row < 1 or grid.grid_row > 5 or grid.grid_col < 1 or grid.grid_col > 5:
+        raise ValueError("grid_row and grid_col must be in range 1..5")
+
     existing = get_bingo_grid_by_user_and_position(db, grid.user_id, grid.grid_row, grid.grid_col)
     if existing:
         return existing
@@ -64,6 +69,10 @@ def initialize_user_bingo_grid(db: Session, user_id: int):
 
 def set_bingo_grid_lit(db: Session, user_id: int, row: int, col: int, is_lit: int = 1):
     """设置指定格子的点亮状态"""
+    # 参数 row/col 应为 1-based
+    if row < 1 or row > 5 or col < 1 or col > 5:
+        raise ValueError("row and col must be in range 1..5")
+
     grid = get_bingo_grid_by_user_and_position(db, user_id, row, col)
     if not grid:
         grid = create_bingo_grid(db, BingoGridCreate(

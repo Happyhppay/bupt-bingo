@@ -7,7 +7,7 @@ from schemas.user import UserLoginRequest, UserLoginResponse, UserVerifyInviteRe
 from crud.user import get_user_by_student_id_and_name, create_user, update_user_role
 from crud.invite_code import get_valid_unused_invite_code, update_invite_code_status
 from crud.club import get_club
-from utils import create_access_token
+from utils import create_access_token, role_to_str
 from dependencies import get_current_user
 
 router = APIRouter(
@@ -40,11 +40,7 @@ def student_login(login_data: UserLoginRequest, db: Session = Depends(get_db)):
     )
 
     # 转换角色为字符串
-    role_str = "normal"
-    if int(user.role) == 1:
-        role_str = "club"
-    elif int(user.role) == 2:
-        role_str = "admin"
+    role_str = role_to_str(user.role)
 
     return {
         "code": 200,

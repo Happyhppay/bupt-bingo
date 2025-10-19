@@ -120,9 +120,11 @@ const useSpecialPoint = () => {
 // 确认使用特殊积分
 const confirmSpecialPoint = async (location) => {
   try {
+    // 前端内部使用 0-based 索引，发送给后端时转换为 1-based
+    const serverLocation = [location[0] + 1, location[1] + 1]
     await userStore.lightGrid({
       pointType: 'special',
-      location
+      location: serverLocation
     })
     showToast('使用成功')
     showSpecialPointModal.value = false

@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import List, Optional
+from datetime import datetime
 
 
 class BingoGridBase(BaseModel):
@@ -14,8 +15,8 @@ class BingoGridCreate(BingoGridBase):
 
 
 class BingoGridUpdate(BaseModel):
-    is_lit: Optional[int] = None
-    lit_time: Optional[str] = None
+    grid_data: Optional[str] = None
+    lit_time: Optional[datetime] = None
 
 
 class BingoGrid(BingoGridBase):
@@ -34,7 +35,8 @@ class BingoStatusResponse(BaseModel):
 
 class LightBingoRequest(BaseModel):
     pointType: str  # normal 或 special
-    location: Optional[List[int]] = None  # [row, col]，仅 special 时需要
+    # location 使用 1-based 索引：[row, col]，仅 special 时需要，范围均为 1..5
+    location: Optional[List[int]] = None  # [row, col]
 
 
 class LightBingoResponse(BaseModel):

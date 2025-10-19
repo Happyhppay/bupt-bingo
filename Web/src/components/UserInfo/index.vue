@@ -1,6 +1,9 @@
 <template>
   <div class="user-info">
-    <span class="name">{{ userStore.userInfo.name }}</span>
+    <div class="top-row">
+      <span class="name">{{ userStore.userInfo.name }}</span>
+      <van-button size="mini" type="danger" @click="onLogout">退出</van-button>
+    </div>
     <span class="points">
       积分：{{ userStore.bingoStatus.point }} / 
       特殊积分：{{ userStore.bingoStatus.specialPoint }}
@@ -10,8 +13,17 @@
 
 <script setup>
 import { useUserStore } from '@/store/user'
+import { useRouter } from 'vue-router'
 
 const userStore = useUserStore()
+const router = useRouter()
+
+const onLogout = () => {
+  userStore.logout()
+  // 重定向到首页并刷新页面，确保组件状态全部清理
+  router.push('/').catch(() => {})
+  window.location.reload()
+}
 </script>
 
 <style scoped>
@@ -37,6 +49,14 @@ const userStore = useUserStore()
   color: rgba(0, 0, 0, 0.9);
   font-size: 12px;
   display: flex;
+  gap: 8px;
+}
+
+.top-row {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
   gap: 8px;
 }
 </style>

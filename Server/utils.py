@@ -88,3 +88,17 @@ def get_bingo_nums(grid_status) -> int:
         bingo_nums += 1
 
     return bingo_nums
+
+
+def role_to_str(role: int) -> str:
+    """Convert numeric role to string representation."""
+    try:
+        r = int(role)
+    except Exception:
+        return "normal"
+
+    if r == 1:
+        return "club"
+    if r == 2:
+        return "admin"
+    return "normal"

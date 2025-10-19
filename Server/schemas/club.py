@@ -7,10 +7,6 @@ class ClubBase(BaseModel):
     club_type: Optional[int] = 0
 
 
-class ClubCreate(ClubBase):
-    pass
-
-
 class ClubUpdate(BaseModel):
     club_name: Optional[str] = None
     club_type: Optional[int] = None

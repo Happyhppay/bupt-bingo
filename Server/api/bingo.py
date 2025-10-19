@@ -60,7 +60,7 @@ def light_bingo_grid(
     else:
         raise HTTPException(status_code=400, detail="Invalid point type")
 
-    # 确定要点亮的格子位置
+    # 确定要点亮的格子位置（统一为 1-based）
     row, col = 0, 0
     if point_type == "normal":
         # 普通积分：随机点亮一个未点亮的格子
@@ -76,14 +76,17 @@ def light_bingo_grid(
             raise HTTPException(status_code=400, detail="All cells are already lit")
 
         # 随机选择一个未点亮的格子
-        row, col = random.choice(unlit_cells)
+        # random.choice 返回的是 0-based 索引，需要转换为 1-based 存储到 DB
+        row0, col0 = random.choice(unlit_cells)
+        row, col = row0 + 1, col0 + 1
     else:  # special
         # 特殊积分：使用指定位置
+        # 前端现在应当传入 1-based 的位置 [1..5]
         row = location[0]
         col = location[1]
 
-        # 验证位置有效性
-        if row < 0 or row > 4 or col < 0 or col > 4:
+        # 验证位置有效性（1-based）
+        if row < 1 or row > 5 or col < 1 or col > 5:
             raise HTTPException(status_code=400, detail="Invalid location")
 
     # 点亮格子

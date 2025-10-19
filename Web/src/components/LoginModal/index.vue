@@ -45,6 +45,7 @@ const form = ref({
 const onSubmit = async () => {
   try {
     await userStore.login(form.value)
+    await userStore.getBingoStatus() // 获取用户状态
     showToast('登录成功')
     emit('update:show', false)
   } catch (error) {
