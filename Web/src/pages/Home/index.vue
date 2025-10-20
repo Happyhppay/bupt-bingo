@@ -36,19 +36,34 @@
     <!-- 底部奖励按钮区域 -->
     <div class="rewards">
       <div class="reward-grid">
-        <van-button
+        <div
           v-for="level in 6"
           :key="level"
-          :disabled="userStore.bingoStatus.bingo < level"
+          class="reward-item"
+          :class="{ unlocked: userStore.bingoStatus.bingo >= level }"
           @click="getReward(level)"
         >
-          {{ level }}级奖励
-        </van-button>
-      </div>
-        <div class="admin-entry-container">
-          <div class="admin-entry" @click="goToAdmin">后台入口</div>
-          <div class="admin-entry" @click="showInvite">邀请代码</div>
+          <van-button
+            :disabled="userStore.bingoStatus.bingo < level"
+            class="reward-button"
+          >
+            <!-- 移除文字，完全用图片表示 -->
+          </van-button>
+          <!-- 所有状态都显示图片，但用不同样式 -->
+          <div class="reward-image" :class="{ locked: userStore.bingoStatus.bingo < level }">
+            <img :src="getRewardImage(level)" :alt="`${level}级奖励`" />
+            <!-- 未解锁时的遮罩和锁图标 -->
+            <div v-if="userStore.bingoStatus.bingo < level" class="lock-overlay">
+              <van-icon name="lock" size="24" />
+              <span class="level-text">{{ level }}号奖励</span>
+            </div>
+          </div>
         </div>
+      </div>
+      <div class="admin-entry-container">
+        <div class="admin-entry" @click="goToAdmin">后台入口</div>
+        <div class="admin-entry" @click="showInvite">邀请代码</div>
+      </div>
     </div>
 
     <!-- 登录弹窗 -->
@@ -89,6 +104,20 @@ import LoginModal from '@/components/LoginModal/index.vue'
 import ScanModal from '@/components/ScanModal/index.vue'
 import SpecialPointModal from '@/components/SpecialPointModal/index.vue'
 import RewardModal from '@/components/RewardModal/index.vue'
+// 获取奖励图片
+const getRewardImage = (level) => {
+  // 这里可以根据等级返回不同的图片URL
+  // 你可以替换为实际的图片路径
+  const imageMap = {
+    1: '/image/rewards/level1.png',
+    2: '/image/rewards/level2.png',
+    3: '/image/rewards/level3.png',
+    4: '/image/rewards/level4.png',
+    5: '/image/rewards/level5.png',
+    6: '/image/rewards/level6.png'
+  }
+  return imageMap[level] || '/image/rewards/default.png'
+}
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -293,6 +322,164 @@ const submitInvite = async () => {
 .admin-entry:hover {
   background: rgba(255, 255, 255, 0.8);
   color: #667eea;
+}
+.rewards {
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.reward-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.reward-item {
+  position: relative;
+  aspect-ratio: 1; /* 保持正方形 */
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.reward-button {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 8px;
+  background: transparent; /* 背景透明，让图片显示 */
+}
+
+/* 奖励图片容器 */
+.reward-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  animation: fadeIn 0.5s ease;
+}
+
+.reward-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* 未解锁状态的图片样式 */
+.reward-image.locked {
+  filter: grayscale(85%) brightness(0.6); /* 黑白滤镜和变暗 */
+}
+
+/* 解锁状态的图片样式 */
+.reward-item.unlocked .reward-image {
+  filter: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* 未解锁时的遮罩 */
+.lock-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  border-radius: 8px;
+}
+
+.lock-overlay .van-icon {
+  margin-bottom: 4px;
+}
+
+.level-text {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* 解锁状态的悬停效果 */
+.reward-item.unlocked:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.reward-item.unlocked:hover .reward-image img {
+  transform: scale(1.05);
+  transition: transform 0.3s ease;
+}
+
+/* 未解锁状态不可点击 */
+.reward-item:not(.unlocked) {
+  cursor: not-allowed;
+}
+
+.reward-item:not(.unlocked) .reward-button {
+  cursor: not-allowed;
+}
+
+/* 图片浮现动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 解锁动画 */
+@keyframes unlock {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.reward-item.unlocked .reward-image {
+  animation: fadeIn 0.5s ease, unlock 0.6s ease;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .reward-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .reward-item {
+    min-height: 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  .reward-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .level-text {
+    font-size: 10px;
+  }
 }
 
 /* 响应式设计 */
