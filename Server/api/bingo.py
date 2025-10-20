@@ -6,7 +6,7 @@ from schemas.bingo import BingoStatusResponse, LightBingoRequest, LightBingoResp
 from crud.bingo_grid import get_user_bingo_status, set_bingo_grid_lit
 from crud.user import get_user, update_user
 from dependencies import get_current_user
-from utils import get_bingo_nums
+from utils import get_bingo_nums, limiter
 
 router = APIRouter(
     prefix="/bingo",
@@ -15,6 +15,7 @@ router = APIRouter(
 
 
 @router.get("/status", response_model=BingoStatusResponse)
+@limiter.limit("10/minute")
 def get_bingo_status(
         db: Session = Depends(get_db),
         current_user=Depends(get_current_user)
@@ -39,6 +40,7 @@ def get_bingo_status(
 
 
 @router.post("/light", response_model=LightBingoResponse)
+@limiter.limit("1/second")
 def light_bingo_grid(
         light_request: LightBingoRequest,
         db: Session = Depends(get_db),

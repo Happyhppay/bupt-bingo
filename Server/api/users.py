@@ -7,7 +7,7 @@ from schemas.user import UserLoginRequest, UserLoginResponse, UserVerifyInviteRe
 from crud.user import get_user_by_student_id_and_name, create_user, update_user_role
 from crud.invite_code import get_valid_unused_invite_code, update_invite_code_status
 from crud.club import get_club
-from utils import create_access_token, role_to_str
+from utils import create_access_token, role_to_str, limiter
 from dependencies import get_current_user
 
 router = APIRouter(
@@ -17,6 +17,7 @@ router = APIRouter(
 
 
 @router.post("/login", response_model=UserLoginResponse)
+@limiter.limit("5/minute")
 def student_login(login_data: UserLoginRequest, db: Session = Depends(get_db)):
     """学号姓名登录接口"""
     # 查找用户
@@ -58,6 +59,7 @@ def student_login(login_data: UserLoginRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/verify", response_model=UserVerifyInviteResponse)
+@limiter.limit("5/hour")
 def verify_invite_code(invite: InviteCodeVerifyRequest, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     """验证邀请码，获取管理员/社团成员权限
 

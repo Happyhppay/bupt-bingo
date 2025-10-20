@@ -7,7 +7,7 @@ from crud.award_token import create_award_token, get_award_token, verify_award_t
 from crud.award_token import has_verified_award
 from crud.user import get_user
 from crud.bingo_grid import get_user_bingo_status
-from utils import generate_award_token, get_bingo_nums
+from utils import generate_award_token, get_bingo_nums, limiter
 from dependencies import get_current_user, get_current_admin
 
 router = APIRouter(
@@ -17,6 +17,7 @@ router = APIRouter(
 
 
 @router.post("/qrcode", response_model=GenerateRewardQrcodeResponse)
+@limiter.limit("7/minute")
 def generate_reward_qrcode(
         reward_request: GenerateRewardQrcodeRequest,
         db: Session = Depends(get_db),
@@ -59,6 +60,7 @@ def generate_reward_qrcode(
 
 
 @router.post("/verify", response_model=VerifyRewardResponse)
+@limiter.limit("1/second")
 def verify_reward_qrcode(
         verify_request: VerifyRewardRequest,
         db: Session = Depends(get_db),
@@ -92,6 +94,6 @@ def verify_reward_qrcode(
                 "studentId": user.id,
                 "name": user.name
             },
-            "rewardType": award.bingo
+            "rewardLevel": award.bingo
         }
     }

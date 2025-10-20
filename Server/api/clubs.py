@@ -8,7 +8,7 @@ from crud.qrcode_token import create_qrcode_token, get_valid_unused_token, updat
 from crud.club import get_club
 from crud.user import update_user_points
 from dependencies import get_current_club_member, get_current_user
-from utils import generate_club_qrcode_token
+from utils import generate_club_qrcode_token, limiter
 
 router = APIRouter(
     prefix="/clubs",
@@ -17,6 +17,7 @@ router = APIRouter(
 
 
 @router.get("/qrcode", response_model=QrcodeRefreshResponse)
+@limiter.limit("1/second")
 def refresh_club_qrcode(
         db: Session = Depends(get_db),
         current_user=Depends(get_current_club_member)
@@ -45,6 +46,7 @@ def refresh_club_qrcode(
 
 
 @router.post("/scan", response_model=ScanQrcodeResponse)
+@limiter.limit("5/minute")
 def scan_club_qrcode(
         scan_request: ScanQrcodeRequest,
         db: Session = Depends(get_db),

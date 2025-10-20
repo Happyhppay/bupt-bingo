@@ -5,6 +5,8 @@ from api.users import router as users_router
 from api.clubs import router as clubs_router
 from api.bingo import router as bingo_router
 from api.reward import router as reward_router
+from slowapi import _rate_limit_exceeded_handler
+from utils import limiter
 
 app = FastAPI(
     title="Bingo H5 小游戏 API",
@@ -26,6 +28,9 @@ app.include_router(users_router)
 app.include_router(clubs_router)
 app.include_router(bingo_router)
 app.include_router(reward_router)
+
+app.limiter = limiter
+app.add_exception_handler(429, _rate_limit_exceeded_handler)
 
 try:
     from database import Base, engine

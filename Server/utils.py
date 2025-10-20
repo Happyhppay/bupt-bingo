@@ -1,3 +1,4 @@
+from fastapi import Request
 import jwt
 import hashlib
 import random
@@ -5,6 +6,9 @@ import string
 from datetime import datetime, timedelta
 import os
 from dotenv import load_dotenv
+
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
 
 load_dotenv()
 
@@ -102,3 +106,15 @@ def role_to_str(role: int) -> str:
     if r == 2:
         return "admin"
     return "normal"
+
+def token_key_func(request: Request) -> str:
+    """用于限流的token键函数"""
+    token = request.headers.get("Authorization")
+    if token:
+        payload = decode_access_token(token)
+        if payload:
+            user_id: int = payload.get("sub")
+            return user_id
+    return get_remote_address(request)
+
+limiter = Limiter(key_func=token_key_func)

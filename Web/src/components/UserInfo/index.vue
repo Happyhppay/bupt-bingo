@@ -4,10 +4,6 @@
       <span class="name">{{ userStore.userInfo.name }}</span>
       <van-button size="mini" type="danger" @click="onLogout">退出</van-button>
     </div>
-    <span class="points">
-      积分：{{ userStore.bingoStatus.point }} / 
-      特殊积分：{{ userStore.bingoStatus.specialPoint }}
-    </span>
   </div>
 </template>
 
