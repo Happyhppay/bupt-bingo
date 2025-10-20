@@ -13,24 +13,27 @@
 
     <!-- Bingo 游戏区域 -->
     <div class="game-area">
-      
       <bingo-grid class="bingo-grid" />
-      <div class="side-buttons down">
-        <van-button
-          type="primary"
-          :disabled="!userStore.bingoStatus.point"
-          @click="useNormalPoint"
-        >
-          使用普通积分 ({{ userStore.bingoStatus.point }})
-        </van-button>
-        <van-button
-          type="primary"
-          :disabled="!userStore.bingoStatus.specialPoint"
-          @click="useSpecialPoint"
-        >
-          使用特殊积分 ({{ userStore.bingoStatus.specialPoint }})
-        </van-button>
-      </div>
+    </div>
+
+    <!-- 积分按钮区域 -->
+    <div class="points-buttons">
+      <van-button
+        type="primary"
+        :disabled="!userStore.bingoStatus.point"
+        @click="useNormalPoint"
+        class="point-button"
+      >
+        使用普通积分 ({{ userStore.bingoStatus.point }})
+      </van-button>
+      <van-button
+        type="primary"
+        :disabled="!userStore.bingoStatus.specialPoint"
+        @click="useSpecialPoint"
+        class="point-button"
+      >
+        使用特殊积分 ({{ userStore.bingoStatus.specialPoint }})
+      </van-button>
     </div>
 
     <!-- 底部奖励按钮区域 -->
@@ -254,30 +257,34 @@ const submitInvite = async () => {
 .game-area {
   flex: 1;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   padding: 20px;
-  gap: 16px;
-}
-
-.side-buttons {
-  width: 100px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.side-buttons .van-button {
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  height: 120px;
-  padding: 16px 8px;
-  font-size: 14px;
 }
 
 .bingo-grid {
   flex: 1;
   max-width: 500px;
+}
+
+/* 积分按钮区域 - 新增样式 */
+.points-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.point-button {
+  min-width: 160px;
+  height: 44px;
+  border-radius: 22px;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .rewards {
@@ -293,19 +300,6 @@ const submitInvite = async () => {
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   margin-bottom: 16px;
-}
-
-.reward-grid .van-button {
-  height: 44px;
-  font-size: 14px;
-  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-  color: #2c3e50;
-  border: none;
-}
-
-.reward-grid .van-button:not(.van-button--disabled):hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .admin-entry {
@@ -323,28 +317,15 @@ const submitInvite = async () => {
   background: rgba(255, 255, 255, 0.8);
   color: #667eea;
 }
-.rewards {
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  border-radius: 20px 20px 0 0;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.reward-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 16px;
-}
 
 .reward-item {
   position: relative;
-  aspect-ratio: 1; /* 保持正方形 */
+  aspect-ratio: 1;
   border-radius: 8px;
   overflow: hidden;
   transition: all 0.3s ease;
   cursor: pointer;
+  min-height: 80px;
 }
 
 .reward-button {
@@ -352,10 +333,9 @@ const submitInvite = async () => {
   height: 100%;
   border: none;
   border-radius: 8px;
-  background: transparent; /* 背景透明，让图片显示 */
+  background: transparent;
 }
 
-/* 奖励图片容器 */
 .reward-image {
   position: absolute;
   top: 0;
@@ -372,22 +352,21 @@ const submitInvite = async () => {
 .reward-image img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   border-radius: 8px;
+  padding: 4px;
+  box-sizing: border-box;
 }
 
-/* 未解锁状态的图片样式 */
 .reward-image.locked {
-  filter: grayscale(85%) brightness(0.6); /* 黑白滤镜和变暗 */
+  filter: grayscale(85%) brightness(0.6);
 }
 
-/* 解锁状态的图片样式 */
 .reward-item.unlocked .reward-image {
   filter: none;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* 未解锁时的遮罩 */
 .lock-overlay {
   position: absolute;
   top: 0;
@@ -401,18 +380,22 @@ const submitInvite = async () => {
   justify-content: center;
   color: white;
   border-radius: 8px;
+  padding: 8px;
+  box-sizing: border-box;
+  text-align: center;
 }
 
 .lock-overlay .van-icon {
   margin-bottom: 4px;
+  font-size: 20px;
 }
 
 .level-text {
   font-size: 12px;
   font-weight: bold;
+  line-height: 1.2;
 }
 
-/* 解锁状态的悬停效果 */
 .reward-item.unlocked:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
@@ -423,7 +406,6 @@ const submitInvite = async () => {
   transition: transform 0.3s ease;
 }
 
-/* 未解锁状态不可点击 */
 .reward-item:not(.unlocked) {
   cursor: not-allowed;
 }
@@ -432,7 +414,6 @@ const submitInvite = async () => {
   cursor: not-allowed;
 }
 
-/* 图片浮现动画 */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -444,7 +425,6 @@ const submitInvite = async () => {
   }
 }
 
-/* 解锁动画 */
 @keyframes unlock {
   0% {
     transform: scale(1);
@@ -464,55 +444,83 @@ const submitInvite = async () => {
 /* 响应式设计 */
 @media (max-width: 768px) {
   .reward-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
   }
 
   .reward-item {
     min-height: 100px;
   }
-}
 
-@media (max-width: 480px) {
-  .reward-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .level-text {
-    font-size: 10px;
-  }
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .game-area {
-    flex-direction: column;
-    padding: 16px;
-  }
-
-  .side-buttons {
-    width: 100%;
+  .points-buttons {
     flex-direction: row;
-    justify-content: center;
-  }
-
-  .side-buttons .van-button {
-    writing-mode: horizontal-tb;
-    height: auto;
+    gap: 12px;
     padding: 12px 16px;
   }
 
-  .reward-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .point-button {
+    min-width: 140px;
+    height: 40px;
+    font-size: 13px;
+  }
+
+  .game-area {
+    padding: 16px;
   }
 }
 
 @media (max-width: 480px) {
   .reward-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .reward-item {
+    min-height: 90px;
+  }
+
+  .points-buttons {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .point-button {
+    min-width: 120px;
+    height: 36px;
+    font-size: 12px;
+    flex: 1;
   }
 
   .game-area {
     padding: 12px;
   }
+}
+
+@media (max-width: 360px) {
+  .points-buttons {
+    gap: 6px;
+    padding: 8px 10px;
+  }
+
+  .point-button {
+    min-width: 120px;
+    height: 34px;
+    font-size: 11px;
+  }
+}
+
+@media (min-width: 769px) {
+  .reward-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .reward-item {
+    min-height: 120px;
+  }
+}
+
+.reward-item {
+  max-width: 200px;
+  margin: 0 auto;
 }
 </style>

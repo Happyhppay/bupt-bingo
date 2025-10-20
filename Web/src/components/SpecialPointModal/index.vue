@@ -2,9 +2,8 @@
   <van-dialog
     :show="show"
     title="选择格子"
-    show-cancel-button
+    :show-cancel-button="false"
     :show-confirm-button="false"
-    @cancel="closeDialog"
     @update:show="$emit('update:show', $event)"
   >
     <div class="grid-selector">
