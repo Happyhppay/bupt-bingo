@@ -52,38 +52,21 @@
       </div>
     </div>
 
-    <!-- 扫码组件 -->
-    <div class="scanner-overlay" v-show="showScanner">
-      <div class="scanner-container">
-        <div class="scanner-header">
-          <h3>扫描二维码</h3>
-          <p>请将二维码放入框内扫描</p>
-        </div>
-        <div id="reader" class="scanner"></div>
-        <van-button
-          type="default"
-          @click="stopScan"
-          class="close-scanner-btn"
-          icon="cross"
-        >
-          关闭扫码
-        </van-button>
-      </div>
-    </div>
+    <!-- 复用 ScanModal 组件（手动模式） -->
+    <scan-modal v-model:show="showScanner" :manual="true" @decoded="onAdminDecoded" />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { showToast } from 'vant'
-import { Html5QrcodeScanner } from 'html5-qrcode'
 import { api } from '@/api'
+import ScanModal from '@/components/ScanModal/index.vue'
 
 const router = useRouter()
 const showScanner = ref(false)
 const verifyResult = ref(null)
-let html5QrcodeScanner = null
 
 const onBack = () => {
   router.push('/')
@@ -92,28 +75,16 @@ const onBack = () => {
 const startScan = () => {
   showScanner.value = true
   verifyResult.value = null
-
-  // 初始化扫码器
-  html5QrcodeScanner = new Html5QrcodeScanner(
-    'reader',
-    { fps: 10, qrbox: { width: 250, height: 250 } },
-    false
-  )
-
-  html5QrcodeScanner.render(onScanSuccess, onScanError)
 }
 
 const stopScan = () => {
-  if (html5QrcodeScanner) {
-    html5QrcodeScanner.clear()
-  }
   showScanner.value = false
 }
 
-const onScanSuccess = async (rewardToken) => {
+const onAdminDecoded = async (decodedText) => {
   try {
     stopScan()
-    const res = await api.verifyReward({ rewardToken })
+    const res = await api.verifyReward({ rewardToken: decodedText })
     verifyResult.value = res
     showToast('验证成功')
   } catch (error) {
@@ -121,16 +92,6 @@ const onScanSuccess = async (rewardToken) => {
     console.error(error)
   }
 }
-
-const onScanError = (error) => {
-  console.warn(error)
-}
-
-onUnmounted(() => {
-  if (html5QrcodeScanner) {
-    html5QrcodeScanner.clear()
-  }
-})
 </script>
 
 <style scoped>

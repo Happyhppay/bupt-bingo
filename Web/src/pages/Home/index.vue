@@ -13,7 +13,9 @@
 
     <!-- Bingo 游戏区域 -->
     <div class="game-area">
-      <div class="side-buttons left">
+      
+      <bingo-grid class="bingo-grid" />
+      <div class="side-buttons down">
         <van-button
           type="primary"
           :disabled="!userStore.bingoStatus.point"
@@ -21,11 +23,6 @@
         >
           使用普通积分 ({{ userStore.bingoStatus.point }})
         </van-button>
-      </div>
-
-      <bingo-grid class="bingo-grid" />
-
-      <div class="side-buttons right">
         <van-button
           type="primary"
           :disabled="!userStore.bingoStatus.specialPoint"
@@ -48,7 +45,10 @@
           {{ level }}级奖励
         </van-button>
       </div>
-      <div class="admin-entry" @click="goToAdmin">后台入口</div>
+        <div class="admin-entry-container">
+          <div class="admin-entry" @click="goToAdmin">后台入口</div>
+          <div class="admin-entry" @click="showInvite">邀请代码</div>
+        </div>
     </div>
 
     <!-- 登录弹窗 -->
@@ -62,6 +62,18 @@
 
     <!-- 奖励二维码弹窗 -->
     <reward-modal v-model:show="showRewardModal" :reward-token="currentRewardToken" />
+
+      <!-- 邀请代码弹窗 -->
+      <van-dialog
+        v-model:show="showInviteModal"
+        title="请输入邀请代码"
+        show-cancel-button
+        @confirm="submitInvite"
+      >
+        <van-form @submit="submitInvite">
+          <van-field v-model="inviteCode" label="邀请代码" placeholder="请输入邀请代码" />
+        </van-form>
+      </van-dialog>
   </div>
 </template>
 
@@ -87,6 +99,8 @@ const showScanModal = ref(false)
 const showSpecialPointModal = ref(false)
 const showRewardModal = ref(false)
 const currentRewardToken = ref('')
+const showInviteModal = ref(false)
+const inviteCode = ref('')
 
 // 显示登录弹窗
 const showLogin = () => {
@@ -153,6 +167,40 @@ const goToAdmin = () => {
     router.push('/club-admin')
   } else {
     showToast('权限不足')
+  }
+}
+
+// 显示邀请代码输入弹窗
+const showInvite = () => {
+  if (!userStore.token) {
+    showToast('请先登录')
+    return
+  }
+  inviteCode.value = ''
+  showInviteModal.value = true
+}
+
+// 提交邀请代码
+const submitInvite = async () => {
+  if (!inviteCode.value || inviteCode.value.trim() === '') {
+    showToast('请填写邀请代码')
+    return
+  }
+  try {
+    await userStore.verifyInvite(inviteCode.value.trim())
+    // 获取成功，重新获取 bingo 状态
+    await userStore.getBingoStatus().catch(() => {})
+    showInviteModal.value = false
+    showToast('验证成功')
+    // 如果角色发生变化，为便于站上进入后台
+    const role = userStore.userInfo.role
+    if (role === 'admin') {
+      router.push('/admin').catch(() => {})
+    } else if (role === 'club') {
+      router.push('/club-admin').catch(() => {})
+    }
+  } catch (error) {
+    console.error(error)
   }
 }
 </script>

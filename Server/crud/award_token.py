@@ -49,3 +49,13 @@ def verify_award_token(db: Session, token_id: int):
         db.commit()
         db.refresh(db_token)
     return db_token
+
+
+def has_verified_award(db: Session, user_id: int, bingo_level: int) -> bool:
+    """检查用户是否已经对指定奖励等级完成验证（领取）。"""
+    existing = db.query(AwardToken).filter(
+        AwardToken.user_id == user_id,
+        AwardToken.bingo == bingo_level,
+        AwardToken.is_verified == 1
+    ).first()
+    return existing is not None

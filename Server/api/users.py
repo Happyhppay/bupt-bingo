@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from datetime import timedelta
 
 from database import get_db
-from schemas.user import UserLoginRequest, UserLoginResponse, UserVerifyInviteResponse
+from schemas.user import UserLoginRequest, UserLoginResponse, UserVerifyInviteResponse, InviteCodeVerifyRequest
 from crud.user import get_user_by_student_id_and_name, create_user, update_user_role
 from crud.invite_code import get_valid_unused_invite_code, update_invite_code_status
 from crud.club import get_club
@@ -58,10 +58,15 @@ def student_login(login_data: UserLoginRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/verify", response_model=UserVerifyInviteResponse)
-def verify_invite_code(invite_code: str, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    """验证邀请码，获取管理员/社团成员权限"""
+def verify_invite_code(invite: InviteCodeVerifyRequest, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    """验证邀请码，获取管理员/社团成员权限
+
+    接收 JSON body: { "inviteCode": "..." }
+    """
+    # 从请求体中读取邀请码
+    inviteCode = invite.inviteCode
     # 查找有效的未使用邀请码
-    code = get_valid_unused_invite_code(db, code=invite_code)
+    code = get_valid_unused_invite_code(db, code=inviteCode)
     if not code:
         raise HTTPException(status_code=400, detail="邀请码无效或已被使用")
 

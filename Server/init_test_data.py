@@ -75,6 +75,31 @@ def init_data():
         print(f"管理员用户角色已设置: id={admin_user.id}")
 
         print("测试数据初始化完成。")
+        # 5) 创建测试邀请码：一个管理员邀请码和一个关联到 Test Club 的社团邀请码
+        try:
+            from crud.invite_code import create_invite_code
+            from schemas.invite import InviteCodeCreate
+
+            # 管理员邀请码
+            admin_code = "ADMIN_TEST_001"
+
+            admin_inv = InviteCodeCreate(code=admin_code, role=2, club_id=None)
+            try:
+                create_invite_code(db, admin_inv)
+                print(f"已创建管理员邀请码: {admin_code}")
+            except Exception as e:
+                print(f"创建管理员邀请码失败或已存在: {e}")
+
+            # 社团邀请码，绑定到 Test Club
+            club_code = "CLUB_TEST_001"
+            club_inv = InviteCodeCreate(code=club_code, role=1, club_id=club.id)
+            try:
+                create_invite_code(db, club_inv)
+                print(f"已创建社团邀请码: {club_code} (club_id={club.id})")
+            except Exception as e:
+                print(f"创建社团邀请码失败或已存在: {e}")
+        except Exception as e:
+            print("插入测试邀请码时发生错误:", e)
     except Exception as e:
         print("初始化测试数据时发生错误:", e)
     finally:

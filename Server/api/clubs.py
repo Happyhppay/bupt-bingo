@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from crud.user_scan import get_by_user_id_and_club_id
+from crud.user_scan import get_by_user_id_and_club_id, record_user_scan
 from database import get_db
 from schemas.club import QrcodeRefreshResponse, ScanQrcodeRequest, ScanQrcodeResponse
 from crud.qrcode_token import create_qrcode_token, get_valid_unused_token, update_qrcode_token_status
@@ -81,6 +81,9 @@ def scan_club_qrcode(
 
     # 标记token为已使用
     update_qrcode_token_status(db, token_id=qrcode_token.id, is_used=1)
+
+    # 记录用户扫描行为
+    record_user_scan(db, user_id=current_user.id, club_id=qrcode_token.club_id)
 
     return {
         "code": 200,

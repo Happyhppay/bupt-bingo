@@ -27,15 +27,15 @@
             <span class="tip-icon">💡</span>
             <span class="tip-title">使用说明</span>
           </div>
-          <p class="tip-content">请让参与者扫描下方二维码进行签到，每次扫码可获得积分</p>
+          <p class="tip-content">请让参与者扫描下方二维码进行签到，每次扫码可获得积分<br>参与者扫码后原二维码将失效，需要重新刷新二维码</p>
         </div>
       </div>
 
       <div class="qrcode-section" v-if="qrcodeToken">
         <div class="qrcode-card card-shadow">
           <div class="qrcode-header">
-            <h3>社团签到二维码</h3>
-            <p class="qrcode-subtitle">有效时间：30分钟</p>
+            <h3>社团二维码</h3>
+            <p class="qrcode-subtitle">有效时间：5分钟</p>
           </div>
           <div class="qrcode-container">
             <qrcode-vue
@@ -44,24 +44,6 @@
               level="H"
               class="qrcode"
             />
-          </div>
-          <div class="qrcode-footer">
-            <van-button
-              type="default"
-              size="small"
-              @click="downloadQrcode"
-              icon="down"
-            >
-              保存二维码
-            </van-button>
-            <van-button
-              type="default"
-              size="small"
-              @click="shareQrcode"
-              icon="share"
-            >
-              分享
-            </van-button>
           </div>
         </div>
       </div>

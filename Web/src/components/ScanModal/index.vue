@@ -24,10 +24,11 @@ import { api } from '@/api'
 import { useUserStore } from '@/store/user'
 
 const props = defineProps({
-  show: Boolean
+  show: Boolean,
+  manual: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['update:show'])
+const emit = defineEmits(['update:show', 'decoded'])
 const userStore = useUserStore()
 let html5Qrcode = null
 
@@ -75,6 +76,11 @@ watch(
 const onScanSuccess = async (decodedText, decodedResult) => {
   // 成功扫描后停止扫描器
   stopScanner()
+  // 如果是手动模式，交由父组件处理解码结果
+  if (props.manual) {
+    emit('decoded', decodedText)
+    return
+  }
   try {
     const res = await api.scanClubQrcode({ qrcodeToken: decodedText })
     await userStore.getBingoStatus()

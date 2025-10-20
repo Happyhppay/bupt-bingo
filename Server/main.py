@@ -27,5 +27,8 @@ app.include_router(clubs_router)
 app.include_router(bingo_router)
 app.include_router(reward_router)
 
-# test
-# 注意：测试/初始化代码已移至 `Server/init_test_data.py`，避免在导入 app 时产生副作用。
+try:
+    from database import Base, engine
+    Base.metadata.create_all(bind=engine)
+except Exception as e:
+    print("应用启动时创建数据表失败: ", e)
