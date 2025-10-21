@@ -37,7 +37,11 @@ request.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
       router.push('/')
+      showToast('登录已过期，请重新登录')
     }
+    else if (error.response?.status === 429) {
+      showToast('请求过于频繁，请稍后再试')
+    } 
     showToast(error.message || '网络错误')
     return Promise.reject(error)
   }

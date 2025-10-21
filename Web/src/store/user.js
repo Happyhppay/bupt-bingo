@@ -10,7 +10,8 @@ export const useUserStore = defineStore('user', {
       point: 0,
       specialPoint: 0,
       bingoGrid: Array(5).fill(Array(5).fill(0)),
-      bingo: 0
+      bingo: 0,
+      rewards: []
     }
   }),
 
