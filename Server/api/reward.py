@@ -1,14 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
+from crud.user import get_user_by_student_id
 from database import get_db
 from schemas.reward import GenerateRewardQrcodeRequest, GenerateRewardQrcodeResponse, VerifyRewardRequest, \
     VerifyRewardResponse
-from crud.award_token import create_award_token, get_award_token, verify_award_token
-from crud.award_token import has_verified_award
-from crud.user import get_user
-from crud.bingo_grid import get_user_bingo_status
-from utils import generate_award_token, get_bingo_nums, limiter
-from dependencies import get_current_user, get_current_admin
+from crud.award_token import get_award_token, get_award_tokens_by_user, verify_award_token
+from utils import limiter
+from dependencies import get_current_user_id, get_current_admin
 
 router = APIRouter(
     prefix="/reward",
@@ -17,44 +15,32 @@ router = APIRouter(
 
 
 @router.post("/qrcode", response_model=GenerateRewardQrcodeResponse)
-@limiter.limit("7/minute")
+@limiter.limit("10/minute")
 def generate_reward_qrcode(
-        reward_request: GenerateRewardQrcodeRequest,
+        request: Request, 
+        reward_qrcode: GenerateRewardQrcodeRequest,
         db: Session = Depends(get_db),
-        current_user=Depends(get_current_user)
+        user_id=Depends(get_current_user_id)
 ):
     """生成领奖二维码"""
-    reward_level = reward_request.rewardLevel
-    if reward_level < 1 or reward_level > 7:
+    reward = reward_qrcode.reward
+    if reward < 1 or reward > 7:
         raise HTTPException(status_code=400, detail="Invalid reward level")
 
-    # 检查用户是否满足该Bingo条件
-    grid_status = get_user_bingo_status(db, user_id=current_user.id)
-    valid_bingos = get_bingo_nums(grid_status)
-
-    if reward_level > valid_bingos and reward_level != 7 or valid_bingos != 25 and reward_level == 7:
-        raise HTTPException(status_code=400, detail=f"User does not meet {reward_level} bingo condition")
-
-
-    # 生成领奖token
-    # 检查用户是否已经领取过该等级奖励（已验证）
-    if has_verified_award(db, user_id=current_user.id, bingo_level=reward_level):
-        raise HTTPException(status_code=400, detail="Reward already claimed")
-
-    token = generate_award_token(user_id=current_user.id, reward_level=reward_level)
-
-    # 创建领奖记录
-    create_award_token(db, award_token={
-        "token": token,
-        "user_id": current_user.id,
-        "bingo": reward_level
-    })
+    award_tokens = get_award_tokens_by_user(db, user_id)
+    reward_token = None
+    for token in award_tokens:
+        if token.reward == reward and token.is_verified == 0:
+            reward_token = token.token
+            break
+    if not reward_token:
+        raise HTTPException(status_code=404, detail="No unverified reward token found")
 
     return {
         "code": 200,
         "message": "Success",
         "data": {
-            "rewardToken": token
+            "rewardToken": reward_token
         }
     }
 
@@ -62,15 +48,16 @@ def generate_reward_qrcode(
 @router.post("/verify", response_model=VerifyRewardResponse)
 @limiter.limit("1/second")
 def verify_reward_qrcode(
+        request: Request,
         verify_request: VerifyRewardRequest,
         db: Session = Depends(get_db),
-        current_admin=Depends(get_current_admin)
+        user_id=Depends(get_current_admin)
 ):
     """管理员验证领奖二维码"""
     reward_token = verify_request.rewardToken
 
     # 查找领奖记录
-    award = get_award_token(db, token=reward_token)
+    award = get_award_token(db, reward_token)
     if not award:
         raise HTTPException(status_code=400, detail="Invalid reward token")
 
@@ -79,21 +66,18 @@ def verify_reward_qrcode(
         raise HTTPException(status_code=400, detail="This reward token has already been verified")
 
     # 获取用户信息
-    user = get_user(db, user_id=award.user_id)
+    user = get_user_by_student_id(db, award.user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
     # 标记为已验证
-    verify_award_token(db, token_id=award.id)
+    verify_award_token(db, award.id)
 
     return {
         "code": 200,
         "message": "Success",
         "data": {
-            "userInfo": {
-                "studentId": user.id,
-                "name": user.name
-            },
-            "rewardLevel": award.bingo
+            "studentId": award.user_id,
+            "reward": award.reward
         }
     }

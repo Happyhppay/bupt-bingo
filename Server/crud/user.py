@@ -3,19 +3,14 @@ from models.user import User
 from datetime import datetime
 from typing import Optional
 
-def get_user(db: Session, user_id: int):
+def get_user_by_student_id(db: Session, student_id: int):
     """根据ID获取用户"""
-    return db.query(User).filter(User.id == user_id).first()
+    return db.query(User).filter(User.id == student_id).first()
 
-def get_user_by_student_id_and_name(db: Session, student_id: int, name: str):
-    """根据学号和姓名获取用户"""
-    return db.query(User).filter(User.id == student_id, User.name == name).first()
-
-def create_user(db: Session, student_id: int, name: str):
+def create_user(db: Session, student_id: int):
     """创建新用户"""
     db_user = User(
         id=student_id,
-        name=name,
         points=0,
         special_points=0,
         role=0,

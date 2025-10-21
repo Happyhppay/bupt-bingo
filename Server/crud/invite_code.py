@@ -1,6 +1,5 @@
 from sqlalchemy.orm import Session
 from models.invite_code import InviteCode
-from schemas.invite import InviteCodeCreate, InviteCodeUpdate
 from datetime import datetime
 
 def get_invite_code(db: Session, code: str):
@@ -9,12 +8,12 @@ def get_invite_code(db: Session, code: str):
 def get_invite_codes(db: Session, skip: int = 0, limit: int = 100):
     return db.query(InviteCode).offset(skip).limit(limit).all()
 
-def create_invite_code(db: Session, invite_code: InviteCodeCreate):
+def create_invite_code(db: Session, code: str, role: int, club_id: int|None, is_used: int = 0):
     db_code = InviteCode(
-        code=invite_code.code,
-        role=invite_code.role,
-        club_id=invite_code.club_id,
-        is_used=0
+        code=code,
+        role=role,
+        club_id=club_id,
+        is_used=is_used
     )
     db.add(db_code)
     db.commit()

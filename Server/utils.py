@@ -15,7 +15,6 @@ load_dotenv()
 # JWT配置
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 10 * 24 * 60  # 10天
 
 
 def create_access_token(data: dict, expires_delta: timedelta = None):
@@ -59,10 +58,10 @@ def generate_club_qrcode_token(club_id: int):
     return generate_token(f"club_{club_id}_{random_str}")
 
 
-def generate_award_token(user_id: int, reward_level: str):
+def generate_award_token(user_id: int, reward: str):
     """生成领奖token"""
     timestamp = datetime.now().timestamp()
-    return generate_token(f"user_{user_id}_{reward_level}_{timestamp}")
+    return generate_token(f"user_{user_id}_{reward}_{timestamp}")
 
 
 def get_bingo_nums(grid_status) -> int:
@@ -93,19 +92,6 @@ def get_bingo_nums(grid_status) -> int:
 
     return bingo_nums
 
-
-def role_to_str(role: int) -> str:
-    """Convert numeric role to string representation."""
-    try:
-        r = int(role)
-    except Exception:
-        return "normal"
-
-    if r == 1:
-        return "club"
-    if r == 2:
-        return "admin"
-    return "normal"
 
 def token_key_func(request: Request) -> str:
     """用于限流的token键函数"""

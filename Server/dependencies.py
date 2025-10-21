@@ -1,14 +1,11 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.orm import Session
-from database import get_db
-from crud.user import get_user
 from utils import decode_access_token
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+def get_current_user_id(token: str = Depends(oauth2_scheme)):
     """获取当前登录用户"""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -24,28 +21,41 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     if user_id is None:
         raise credentials_exception
 
-    user = get_user(db, user_id=user_id)
-    if user is None:
+    return user_id
+
+def get_current_role(token: str = Depends(oauth2_scheme)):
+    """获取当前登录用户角色"""
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    payload = decode_access_token(token)
+    if payload is None:
         raise credentials_exception
 
-    return user
+    role: int = payload.get("role")
+    if role is None:
+        raise credentials_exception
+    return role
 
 
-def get_current_club_member(current_user=Depends(get_current_user)):
+def get_current_club_member(user_id=Depends(get_current_user_id), role=Depends(get_current_role)):
     """获取当前社团成员用户"""
-    if current_user.role != 1:
+    if role != 1:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough permissions (requires club member)"
         )
-    return current_user
+    return user_id
 
 
-def get_current_admin(current_user=Depends(get_current_user)):
+def get_current_admin(user_id=Depends(get_current_user_id), role=Depends(get_current_role)):
     """获取当前管理员用户"""
-    if current_user.role != 2:
+    if role != 2:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough permissions (requires admin)"
         )
-    return current_user
+    return user_id

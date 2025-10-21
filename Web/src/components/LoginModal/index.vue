@@ -14,13 +14,6 @@
         placeholder="请输入学号"
         :rules="[{ required: true, message: '请填写学号' }]"
       />
-      <van-field
-        v-model="form.name"
-        name="name"
-        label="姓名"
-        placeholder="请输入姓名"
-        :rules="[{ required: true, message: '请填写姓名' }]"
-      />
     </van-form>
   </van-dialog>
 </template>
@@ -38,8 +31,7 @@ const emit = defineEmits(['update:show'])
 
 const userStore = useUserStore()
 const form = ref({
-  student_id: '',
-  name: ''
+  student_id: ''
 })
 
 const onSubmit = async () => {

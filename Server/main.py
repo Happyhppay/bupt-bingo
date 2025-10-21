@@ -6,6 +6,8 @@ from api.clubs import router as clubs_router
 from api.bingo import router as bingo_router
 from api.reward import router as reward_router
 from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 from utils import limiter
 
 app = FastAPI(
@@ -13,24 +15,15 @@ app = FastAPI(
     description="社团游园会 Bingo 小游戏后端 API",
     version="1.0.0"
 )
-
-# 配置CORS
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["*"],
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
-
 # 注册路由
 app.include_router(users_router)
 app.include_router(clubs_router)
 app.include_router(bingo_router)
 app.include_router(reward_router)
 
-app.limiter = limiter
-app.add_exception_handler(429, _rate_limit_exceeded_handler)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
 try:
     from database import Base, engine

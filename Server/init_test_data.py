@@ -34,15 +34,15 @@ def init_data():
             print(f"社团已存在: id={club.id}, name={club.club_name}")
 
         # 2) 创建普通用户（带 100 普通积分与 100 特殊积分）
-        from crud.user import get_user, create_user as crud_create_user
+        from crud.user import get_user_by_student_id, create_user as crud_create_user
 
         normal_user_id = 1001
-        normal_user = get_user(db, user_id=normal_user_id)
+        normal_user = get_user_by_student_id(db, normal_user_id)
         if not normal_user:
-            normal_user = crud_create_user(db, student_id=normal_user_id, name="normal_user")
-            print(f"创建普通用户: id={normal_user.id}, name={normal_user.name}")
+            normal_user = crud_create_user(db, student_id=normal_user_id)
+            print(f"创建普通用户: id={normal_user.id}")
         else:
-            print(f"普通用户已存在: id={normal_user.id}, name={normal_user.name}")
+            print(f"普通用户已存在: id={normal_user.id}")
 
         # 确保普通用户拥有 100 普通与 100 特殊积分
         update_user_points(db, user_id=normal_user.id, add_points=100 - (normal_user.points or 0), add_special=100 - (normal_user.special_points or 0))
@@ -50,12 +50,12 @@ def init_data():
 
         # 3) 创建社团成员用户并关联到测试社团
         club_user_id = 1002
-        club_user = get_user(db, user_id=club_user_id)
+        club_user = get_user_by_student_id(db, club_user_id)
         if not club_user:
-            club_user = crud_create_user(db, student_id=club_user_id, name="club_member")
-            print(f"创建社团用户: id={club_user.id}, name={club_user.name}")
+            club_user = crud_create_user(db, student_id=club_user_id)
+            print(f"创建社团用户: id={club_user.id}")
         else:
-            print(f"社团用户已存在: id={club_user.id}, name={club_user.name}")
+            print(f"社团用户已存在: id={club_user.id}")
 
         # 设置为社团成员 (role=1)
         update_user_role(db, user_id=club_user.id, role=1, club_id=club.id)
@@ -63,38 +63,35 @@ def init_data():
 
         # 4) 创建管理员用户
         admin_user_id = 1003
-        admin_user = get_user(db, user_id=admin_user_id)
+        admin_user = get_user_by_student_id(db, admin_user_id)
         if not admin_user:
-            admin_user = crud_create_user(db, student_id=admin_user_id, name="admin_user")
-            print(f"创建管理员用户: id={admin_user.id}, name={admin_user.name}")
+            admin_user = crud_create_user(db, student_id=admin_user_id)
+            print(f"创建管理员用户: id={admin_user.id}")
         else:
-            print(f"管理员用户已存在: id={admin_user.id}, name={admin_user.name}")
+            print(f"管理员用户已存在: id={admin_user.id}")
 
         # 设置为管理员 (role=2)
         update_user_role(db, user_id=admin_user.id, role=2)
         print(f"管理员用户角色已设置: id={admin_user.id}")
 
-        print("测试数据初始化完成。")
+
         # 5) 创建测试邀请码：一个管理员邀请码和一个关联到 Test Club 的社团邀请码
         try:
             from crud.invite_code import create_invite_code
-            from schemas.invite import InviteCodeCreate
 
             # 管理员邀请码
             admin_code = "ADMIN_TEST_001"
 
-            admin_inv = InviteCodeCreate(code=admin_code, role=2, club_id=None)
             try:
-                create_invite_code(db, admin_inv)
+                create_invite_code(db, code=admin_code, role=2, club_id=None)
                 print(f"已创建管理员邀请码: {admin_code}")
             except Exception as e:
                 print(f"创建管理员邀请码失败或已存在: {e}")
 
             # 社团邀请码，绑定到 Test Club
             club_code = "CLUB_TEST_001"
-            club_inv = InviteCodeCreate(code=club_code, role=1, club_id=club.id)
             try:
-                create_invite_code(db, club_inv)
+                create_invite_code(db, code=club_code, role=1, club_id=club.id)
                 print(f"已创建社团邀请码: {club_code} (club_id={club.id})")
             except Exception as e:
                 print(f"创建社团邀请码失败或已存在: {e}")
@@ -108,3 +105,4 @@ def init_data():
 
 if __name__ == '__main__':
     init_data()
+    print("测试数据初始化完成。")

@@ -7,7 +7,6 @@ class User(Base):
     __tablename__ = "user"
 
     id = Column(Integer, primary_key=True, index=True)  # 学号
-    name = Column(String(64), index=True, nullable=False)  # 姓名
     points = Column(Integer, default=0)
     special_points = Column(Integer, default=0)
     bingo = Column(Integer, default=0)

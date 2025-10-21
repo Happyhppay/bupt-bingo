@@ -32,8 +32,8 @@
             <span class="value">{{ verifyResult.userInfo.name }}</span>
           </div>
           <div class="info-item">
-            <span class="label">奖励等级</span>
-            <span class="value reward-level">第 {{ verifyResult.rewardLevel }} 级</span>
+            <span class="label">奖品编号</span>
+            <span class="value reward-level">{{ verifyResult.rewardLevel }} 号</span>
           </div>
         </div>
         <van-button
@@ -42,7 +42,7 @@
           @click="verifyResult = null"
           class="clear-btn"
         >
-          清除结果
+          关闭
         </van-button>
       </div>
 
@@ -85,7 +85,11 @@ const onAdminDecoded = async (decodedText) => {
   try {
     stopScan()
     const res = await api.verifyReward({ rewardToken: decodedText })
-    verifyResult.value = res
+    // API returns { studentId, reward }
+    verifyResult.value = {
+      userInfo: { studentId: res.studentId, name: res.studentName || '' },
+      rewardLevel: res.reward
+    }
     showToast('验证成功')
   } catch (error) {
     showToast('验证失败')

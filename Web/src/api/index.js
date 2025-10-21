@@ -57,6 +57,7 @@ export const api = {
   scanClubQrcode: (data) => request.post('/clubs/scan', data),
 
   // 奖励相关
+  // 参数: { reward: 1 }
   getRewardQrcode: (data) => request.post('/reward/qrcode', data),
   verifyReward: (data) => request.post('/reward/verify', data)
 }

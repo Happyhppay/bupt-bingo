@@ -1,7 +1,7 @@
 <template>
   <div class="user-info">
     <div class="top-row">
-      <span class="name">{{ userStore.userInfo.name }}</span>
+      <span class="id">{{ userStore.userInfo.studentId }}</span>
       <van-button size="mini" type="danger" @click="onLogout">退出</van-button>
     </div>
   </div>

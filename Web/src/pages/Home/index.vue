@@ -43,26 +43,27 @@
           v-for="level in 6"
           :key="level"
           class="reward-item"
-          :class="{ unlocked: userStore.bingoStatus.bingo >= level }"
+          :class="{ unlocked: userStore.bingoStatus.rewards.includes(level) }"
           @click="getReward(level)"
         >
           <van-button
-            :disabled="userStore.bingoStatus.bingo < level"
+            :disabled="!userStore.bingoStatus.rewards.includes(level)"
             class="reward-button"
           >
-            <!-- 移除文字，完全用图片表示 -->
+            <!-- 按钮仅作为点击容器，内容由 reward-image 控制 -->
           </van-button>
-          <!-- 所有状态都显示图片，但用不同样式 -->
-          <div class="reward-image" :class="{ locked: userStore.bingoStatus.bingo < level }">
-            <img :src="getRewardImage(level)" :alt="`${level}级奖励`" />
-            <!-- 未解锁时的遮罩和锁图标 -->
-            <div v-if="userStore.bingoStatus.bingo < level" class="lock-overlay">
+          <div class="reward-image" :class="{ locked: !userStore.bingoStatus.rewards.includes(level) }">
+            <img :src="getRewardImage(level)" :alt="`${level}号奖品`" />
+            <!-- 未获得时显示锁和提示 -->
+            <div v-if="!userStore.bingoStatus.rewards.includes(level)" class="lock-overlay">
               <van-icon name="lock" size="24" />
-              <span class="level-text">{{ level }}号奖励</span>
+              <span class="level-text">{{ level }}号奖品</span>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- 管理员入口 -->
       <div class="admin-entry-container">
         <div class="admin-entry" @click="goToAdmin">后台入口</div>
         <div class="admin-entry" @click="showInvite">邀请代码</div>
@@ -166,8 +167,7 @@ const useSpecialPoint = () => {
 // 确认使用特殊积分
 const confirmSpecialPoint = async (location) => {
   try {
-    // 前端内部使用 0-based 索引，发送给后端时转换为 1-based
-    const serverLocation = [location[0] + 1, location[1] + 1]
+    const serverLocation = [location[0], location[1]]
     await userStore.lightGrid({
       pointType: 'special',
       location: serverLocation
@@ -182,8 +182,9 @@ const confirmSpecialPoint = async (location) => {
 // 获取奖励
 const getReward = async (level) => {
   try {
-    const res = await api.getRewardQrcode({ rewardLevel: level })
-    currentRewardToken.value = res.rewardToken
+  // API expects { reward: level }
+  const res = await api.getRewardQrcode({ reward: level })
+  currentRewardToken.value = res.rewardToken
     showRewardModal.value = true
   } catch (error) {
     console.error(error)
