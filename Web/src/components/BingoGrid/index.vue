@@ -9,6 +9,7 @@
         v-for="(cell, j) in row" 
         :key="j"
         :class="['grid-cell', { active: cell === 1 }]"
+        :style="cell === 1 ? getCellBackgroundStyle(i, j) : {}"
         @click="onCellClick([i, j])"
       ></div>
     </div>
@@ -17,11 +18,28 @@
 
 <script setup>
 import { useUserStore } from '@/store/user'
+import { computed } from 'vue'
+
+// 导入本地图片 
+import backgroundImage from '/image/you.jpg'
 
 const userStore = useUserStore()
 
 const onCellClick = (location) => {
   emit('cell-click', location)
+}
+
+// 计算每个格子的背景位置
+const getCellBackgroundStyle = (row, col) => {
+  const gridSize = userStore.bingoStatus.bingoGrid.length;
+  const backgroundSize = 100 * gridSize + '% ' + 100 * gridSize + '%';
+  const backgroundPosition = (100 / (gridSize - 1)) * col + '% ' + (100 / (gridSize - 1)) * row + '%';
+
+  return {
+    backgroundImage: `url(${backgroundImage})`,
+    backgroundSize: backgroundSize,
+    backgroundPosition: backgroundPosition
+  };
 }
 
 defineEmits(['cell-click'])
@@ -70,6 +88,7 @@ defineEmits(['cell-click'])
   box-sizing: border-box;
   min-height: 0; /* 重要：允许flex项目缩小 */
 }
+
 .grid-cell::before {
   content: '';
   position: absolute;
@@ -93,11 +112,15 @@ defineEmits(['cell-click'])
 }
 
 .grid-cell.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  /* 激活时显示底图部分 */
+  background: none;
+  background-repeat: no-repeat;
+  background-size: 500% 500%; /* 5x5网格对应500% */
   box-shadow:
     0 4px 16px rgba(102, 126, 234, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
   animation: pulse 2s infinite;
+  border-color: #667eea;
 }
 
 @keyframes pulse {
