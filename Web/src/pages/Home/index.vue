@@ -26,6 +26,14 @@
       >
         使用普通积分 ({{ userStore.bingoStatus.point }})
       </van-button>
+      <!-- 新增游戏规则按钮 -->
+      <van-button
+        type="info"
+        @click="showGameRules"
+        class="point-button"
+      >
+        游戏规则
+      </van-button>
       <van-button
         type="primary"
         :disabled="!userStore.bingoStatus.specialPoint"
@@ -38,7 +46,9 @@
 
     <!-- 底部奖励按钮区域 -->
     <div class="rewards">
+      <!-- 修改奖励网格布局 -->
       <div class="reward-grid">
+        <!-- 前6个奖励放在第一行 -->
         <div
           v-for="level in 6"
           :key="level"
@@ -58,6 +68,29 @@
             <div v-if="!userStore.bingoStatus.rewards.includes(level)" class="lock-overlay">
               <van-icon name="lock" size="24" />
               <span class="level-text">{{ level }}号奖品</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第7个奖励单独放在第二行中间，未激活时隐藏 -->
+        <div
+          v-if="userStore.bingoStatus.rewards.includes(7)"
+          class="reward-item reward-item-special"
+          :class="{ unlocked: userStore.bingoStatus.rewards.includes(7) }"
+          @click="getReward(7)"
+        >
+          <van-button
+            :disabled="!userStore.bingoStatus.rewards.includes(7)"
+            class="reward-button"
+          >
+            <!-- 按钮仅作为点击容器，内容由 reward-image 控制 -->
+          </van-button>
+          <div class="reward-image" :class="{ locked: !userStore.bingoStatus.rewards.includes(7) }">
+            <img :src="getRewardImage(7)" :alt="`神秘奖品`" />
+            <!-- 未获得时显示锁和提示 -->
+            <div v-if="!userStore.bingoStatus.rewards.includes(7)" class="lock-overlay">
+              <van-icon name="lock" size="24" />
+              <span class="level-text">神秘奖品</span>
             </div>
           </div>
         </div>
@@ -82,17 +115,60 @@
     <!-- 奖励二维码弹窗 -->
     <reward-modal v-model:show="showRewardModal" :reward-token="currentRewardToken" />
 
-      <!-- 邀请代码弹窗 -->
-      <van-dialog
-        v-model:show="showInviteModal"
-        title="请输入邀请代码"
-        show-cancel-button
-        @confirm="submitInvite"
-      >
-        <van-form @submit="submitInvite">
-          <van-field v-model="inviteCode" label="邀请代码" placeholder="请输入邀请代码" />
-        </van-form>
-      </van-dialog>
+    <!-- 邀请代码弹窗 -->
+    <van-dialog
+      v-model:show="showInviteModal"
+      title="请输入邀请代码"
+      show-cancel-button
+      @confirm="submitInvite"
+    >
+      <van-form @submit="submitInvite">
+        <van-field v-model="inviteCode" label="邀请代码" placeholder="请输入邀请代码" />
+      </van-form>
+    </van-dialog>
+
+    <!-- 游戏规则弹窗 -->
+    <van-dialog
+      v-model:show="showGameRulesModal"
+      title="游戏规则"
+      show-cancel-button
+      cancel-button-text="关闭"
+      :show-confirm-button="false"
+    >
+      <div class="game-rules-content">
+        <h3>Bingo 游戏规则</h3>
+        <div class="rule-item">
+          <strong>1. 游戏目标</strong>
+          <p>完成 Bingo 卡片上的连线任务，获得对应的奖励。</p>
+        </div>
+        <div class="rule-item">
+          <strong>2. 积分获得</strong>
+          <p>完成各个社团的活动后，扫描该社团的动态签到码获得。</p>
+        </div>
+        <div class="rule-item">
+          <strong>3. 积分使用</strong>
+          <p>- 普通积分：随机点亮一个格子。</p>
+          <p>- 特殊积分：指定点亮任意一个格子。</p>
+        </div>
+        <div class="rule-item">
+          <strong>4. 连线规则</strong>
+          <p>横线、竖线、对角线连成一条直线即可完成一次Bingo连线。</p>
+        </div>
+        <div class="rule-item">
+          <strong>5. 奖励获取</strong>
+          <p>完成一次Bingo连线可随机点亮一个奖励（每个奖励只能点亮一次）。</p>
+        </div>
+        <div class="rule-item">
+          <strong>6. 奖励兑换</strong>
+          <p>点击想要兑换的奖励会出现一个兑奖二维码，由社团工作部兑奖处的工作人员扫码后，出示学生证或校园卡获取（一个二维码只能用一次）。</p>
+        </div>
+        <div class="rule-item">
+          <strong>7. 彩蛋</strong>
+		  <p>提示1："五佳十优"社团的签到码似乎有点特别？！</p>
+          <p>提示2：尝试点亮全部25个格子会有惊喜吗？</p>
+        </div>
+      </div>
+    </van-dialog>
   </div>
 </template>
 
@@ -108,17 +184,17 @@ import LoginModal from '@/components/LoginModal/index.vue'
 import ScanModal from '@/components/ScanModal/index.vue'
 import SpecialPointModal from '@/components/SpecialPointModal/index.vue'
 import RewardModal from '@/components/RewardModal/index.vue'
+
 // 获取奖励图片
 const getRewardImage = (level) => {
-  // 这里可以根据等级返回不同的图片URL
-  // 你可以替换为实际的图片路径
   const imageMap = {
     1: '/image/rewards/level1.png',
     2: '/image/rewards/level2.png',
     3: '/image/rewards/level3.png',
     4: '/image/rewards/level4.png',
     5: '/image/rewards/level5.png',
-    6: '/image/rewards/level6.png'
+    6: '/image/rewards/level6.png',
+    7: '/image/rewards/level7.png'
   }
   return imageMap[level] || '/image/rewards/default.png'
 }
@@ -134,6 +210,7 @@ const showRewardModal = ref(false)
 const currentRewardToken = ref('')
 const showInviteModal = ref(false)
 const inviteCode = ref('')
+const showGameRulesModal = ref(false)
 
 // 显示登录弹窗
 const showLogin = () => {
@@ -149,10 +226,15 @@ const showScan = () => {
   showScanModal.value = true
 }
 
+// 显示游戏规则弹窗
+const showGameRules = () => {
+  showGameRulesModal.value = true
+}
+
 // 使用普通积分
 const useNormalPoint = async () => {
   try {
-    await userStore.lightGrid({ pointType: 'normal' })
+    await userStore.lightGrid({pointType: 'normal'})
     showToast('使用成功')
   } catch (error) {
     console.error(error)
@@ -182,9 +264,8 @@ const confirmSpecialPoint = async (location) => {
 // 获取奖励
 const getReward = async (level) => {
   try {
-  // API expects { reward: level }
-  const res = await api.getRewardQrcode({ reward: level })
-  currentRewardToken.value = res.rewardToken
+    const res = await api.getRewardQrcode({reward: level})
+    currentRewardToken.value = res.rewardToken
     showRewardModal.value = true
   } catch (error) {
     console.error(error)
@@ -221,11 +302,9 @@ const submitInvite = async () => {
   }
   try {
     await userStore.verifyInvite(inviteCode.value.trim())
-    // 获取成功，重新获取 bingo 状态
     await userStore.getBingoStatus().catch(() => {})
     showInviteModal.value = false
     showToast('验证成功')
-    // 如果角色发生变化，为便于站上进入后台
     const role = userStore.userInfo.role
     if (role === 'admin') {
       router.push('/admin').catch(() => {})
@@ -239,7 +318,6 @@ const submitInvite = async () => {
 </script>
 
 <style scoped>
-/* Home/index.vue 中的 style 部分 */
 .home {
   height: 100vh;
   display: flex;
@@ -268,7 +346,7 @@ const submitInvite = async () => {
   max-width: 500px;
 }
 
-/* 积分按钮区域 - 新增样式 */
+/* 积分按钮区域 */
 .points-buttons {
   display: flex;
   justify-content: center;
@@ -301,6 +379,23 @@ const submitInvite = async () => {
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   margin-bottom: 16px;
+  position: relative;
+  min-height: auto;
+  transition: all 0.3s ease;
+}
+
+/* 当第7个奖励显示时的特殊样式 */
+.reward-item-special {
+  grid-column: 2 / 3;
+  justify-self: center;
+  margin-top: 12px;
+  animation: fadeIn 0.5s ease;
+}
+
+.admin-entry-container {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
 }
 
 .admin-entry {
@@ -312,6 +407,7 @@ const submitInvite = async () => {
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
+  min-width: 80px;
 }
 
 .admin-entry:hover {
@@ -327,6 +423,8 @@ const submitInvite = async () => {
   transition: all 0.3s ease;
   cursor: pointer;
   min-height: 80px;
+  max-width: 200px;
+  margin: 0 auto;
 }
 
 .reward-button {
@@ -415,14 +513,52 @@ const submitInvite = async () => {
   cursor: not-allowed;
 }
 
+/* 游戏规则内容样式 */
+.game-rules-content {
+  padding: 16px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.game-rules-content h3 {
+  text-align: center;
+  margin-bottom: 16px;
+  color: #1989fa;
+}
+
+.rule-item {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.rule-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.rule-item strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #333;
+}
+
+.rule-item p {
+  margin: 4px 0;
+  color: #666;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: scale(0.8);
+    transform: scale(0.8) translateY(-10px);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) translateY(0);
   }
 }
 
@@ -447,6 +583,13 @@ const submitInvite = async () => {
   .reward-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
+  }
+
+  .reward-item-special {
+    grid-column: 1 / -1;
+    justify-self: center;
+    max-width: 120px;
+    margin-top: 8px;
   }
 
   .reward-item {
@@ -474,6 +617,13 @@ const submitInvite = async () => {
   .reward-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
+  }
+
+  .reward-item-special {
+    grid-column: 1 / -1;
+    justify-self: center;
+    max-width: 100px;
+    margin-top: 6px;
   }
 
   .reward-item {
@@ -518,10 +668,5 @@ const submitInvite = async () => {
   .reward-item {
     min-height: 120px;
   }
-}
-
-.reward-item {
-  max-width: 200px;
-  margin: 0 auto;
 }
 </style>
