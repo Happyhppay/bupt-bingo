@@ -1,18 +1,23 @@
 <template>
   <div class="home">
-    <!-- 顶部栏 -->
-    <van-nav-bar class="header">
-      <template #left>
-        <user-info v-if="userStore.token" />
-        <van-button v-else type="primary" size="small" @click="showLogin">登录</van-button>
-      </template>
-      <template #title>
+    <!-- 顶部栏 - 两行布局 -->
+    <div class="custom-header">
+      <!-- 第一行：标题 -->
+      <div class="header-title-row">
         <div class="header-title">百象共生，邮我同行</div>
-      </template>
-      <template #right>
-        <van-button type="primary" size="small" icon="scan" @click="showScan">扫码</van-button>
-      </template>
-    </van-nav-bar>
+      </div>
+
+      <!-- 第二行：用户信息和功能按钮 -->
+      <div class="header-action-row">
+        <div class="header-left">
+          <user-info v-if="userStore.token" />
+          <van-button v-else type="primary" size="small" icon="user" @click="showLogin">登录</van-button>
+        </div>
+        <div class="header-right">
+          <van-button type="primary" size="small" icon="scan" @click="showScan">扫码</van-button>
+        </div>
+      </div>
+    </div>
 
     <!-- Bingo 游戏区域 -->
     <div class="game-area">
@@ -328,14 +333,24 @@ const submitInvite = async () => {
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
-.header {
+/* 新的顶部栏样式 */
+.custom-header {
   position: sticky;
   top: 0;
   z-index: 1000;
   backdrop-filter: blur(10px);
-  background: rgba(102, 126, 234, 0.95) !important;
+  background: rgba(102, 126, 234, 0.95);
+  padding: 12px 16px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
-/* 添加标题样式 */
+
+.header-title-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
 .header-title {
   color: white;
   font-size: 18px;
@@ -344,36 +359,36 @@ const submitInvite = async () => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 60vw;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .header-title {
-    font-size: 16px;
-    max-width: 50vw;
-  }
+.header-action-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-@media (max-width: 480px) {
-  .header-title {
-    font-size: 14px;
-    max-width: 40vw;
-  }
+.header-left,
+.header-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
 }
 
-@media (max-width: 360px) {
-  .header-title {
-    font-size: 13px;
-    max-width: 35vw;
-  }
+.header-left {
+  justify-content: flex-start;
 }
+
+.header-right {
+  justify-content: flex-end;
+}
+
 .game-area {
   flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: 16px 20px;
 }
 
 .bingo-grid {
@@ -615,6 +630,18 @@ const submitInvite = async () => {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
+  .custom-header {
+    padding: 10px 12px 6px;
+  }
+
+  .header-title {
+    font-size: 16px;
+  }
+
+  .header-title-row {
+    margin-bottom: 6px;
+  }
+
   .reward-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
@@ -649,6 +676,18 @@ const submitInvite = async () => {
 }
 
 @media (max-width: 480px) {
+  .custom-header {
+    padding: 8px 10px 6px;
+  }
+
+  .header-title {
+    font-size: 15px;
+  }
+
+  .header-title-row {
+    margin-bottom: 6px;
+  }
+
   .reward-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
@@ -683,6 +722,14 @@ const submitInvite = async () => {
 }
 
 @media (max-width: 360px) {
+  .custom-header {
+    padding: 6px 8px 4px;
+  }
+
+  .header-title {
+    font-size: 14px;
+  }
+
   .points-buttons {
     gap: 6px;
     padding: 8px 10px;
