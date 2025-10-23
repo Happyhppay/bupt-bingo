@@ -21,7 +21,7 @@ import { useUserStore } from '@/store/user'
 import { computed } from 'vue'
 
 // 导入本地图片 
-import backgroundImage from '/image/you.jpg'
+import backgroundImage from '/image/you.png'
 
 const userStore = useUserStore()
 

@@ -6,6 +6,9 @@
         <user-info v-if="userStore.token" />
         <van-button v-else type="primary" size="small" @click="showLogin">登录</van-button>
       </template>
+      <template #title>
+        <div class="header-title">百象共生，邮我同行</div>
+      </template>
       <template #right>
         <van-button type="primary" size="small" icon="scan" @click="showScan">扫码</van-button>
       </template>
@@ -142,21 +145,21 @@
           <p>完成 Bingo 卡片上的连线任务，获得对应的奖励。</p>
         </div>
         <div class="rule-item">
-          <strong>2. 积分获得</strong>
-          <p>完成各个社团的活动后，扫描该社团的动态签到码获得。</p>
-        </div>
-        <div class="rule-item">
-          <strong>3. 积分使用</strong>
-          <p>- 普通积分：随机点亮一个格子。</p>
-          <p>- 特殊积分：指定点亮任意一个格子。</p>
-        </div>
-        <div class="rule-item">
-          <strong>4. 连线规则</strong>
+          <strong>2. 连线规则</strong>
           <p>横线、竖线、对角线连成一条直线即可完成一次Bingo连线。</p>
         </div>
         <div class="rule-item">
-          <strong>5. 奖励获取</strong>
+          <strong>3. 奖励获取</strong>
           <p>完成一次Bingo连线可随机点亮一个奖励（每个奖励只能点亮一次）。</p>
+        </div>
+        <div class="rule-item">
+          <strong>4. 积分获得</strong>
+          <p>完成各个社团的活动后，扫描该社团的动态签到码获得。</p>
+        </div>
+        <div class="rule-item">
+          <strong>5. 积分使用</strong>
+          <p>- 普通积分：随机点亮一个格子。</p>
+          <p>- 特殊积分：指定点亮任意一个格子。</p>
         </div>
         <div class="rule-item">
           <strong>6. 奖励兑换</strong>
@@ -332,7 +335,39 @@ const submitInvite = async () => {
   backdrop-filter: blur(10px);
   background: rgba(102, 126, 234, 0.95) !important;
 }
+/* 添加标题样式 */
+.header-title {
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60vw;
+}
 
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .header-title {
+    font-size: 16px;
+    max-width: 50vw;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-title {
+    font-size: 14px;
+    max-width: 40vw;
+  }
+}
+
+@media (max-width: 360px) {
+  .header-title {
+    font-size: 13px;
+    max-width: 35vw;
+  }
+}
 .game-area {
   flex: 1;
   display: flex;
