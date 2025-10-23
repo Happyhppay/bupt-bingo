@@ -110,6 +110,10 @@ def light_bingo_grid(
             reward = random.choice(not_get_rewards)
             token = generate_award_token(user_id, f"{reward}")
             create_award_token(db, token, user_id, reward)
+        if bingo == 12:
+            reward = 7
+            token = generate_award_token(user_id, f"{reward}")
+            create_award_token(db, token, user_id, reward)
 
     # 扣除相应积分
     if point_type == "normal":
