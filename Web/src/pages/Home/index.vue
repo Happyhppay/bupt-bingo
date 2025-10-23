@@ -4,7 +4,7 @@
     <div class="custom-header">
       <!-- 第一行：标题 -->
       <div class="header-title-row">
-        <div class="header-title">百象共生，邮我同行</div>
+        <div class="header-title">百社游园，邮你绘梦</div>
       </div>
 
       <!-- 第二行：用户信息和功能按钮 -->
